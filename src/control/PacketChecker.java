@@ -1,0 +1,397 @@
+package control;
+
+/**
+ * This class has some methods to check if a packet is correctly formed and 
+ * belongs to a specific kind of message. 
+ * 
+ * <p>
+ * E.G.: if a host receives a message
+ * and wants to know if it's an ACK message, it has to call the method
+ * {@code ACK()}. If this method returns <i>true</i>, the message was 
+ * indeed an ACK and was correctly formed.
+ */
+public class PacketChecker {
+    
+    /**
+     * Checks the given packet and returns the type of {@link ControlMessage}
+     * that is stored in the array. If there isn't a valid packet, returns 
+     * {@code null}.
+     * 
+     * @param buffer
+     *              Array of bytes with the full packet received from the peer.
+     * 
+     * @return 
+     *              The type of {@link ControlMessage} stored in the buffer, or
+     *          {@code null} if there wasn't a recognised packet.
+     */
+    public static ControlMessage checkPacket (byte [] buffer) {
+        
+        if (ACK(buffer)) {
+            
+            return ControlMessage.ACK;
+        }
+        
+        if (BYE(buffer)) {
+            
+            return ControlMessage.BYE;
+        }
+        
+        if (CHECK_CON(buffer)) {
+            
+            return ControlMessage.CHECK_CON;
+        }
+        
+        if (CHNG_DF_REQ(buffer)) {
+            
+            return ControlMessage.CHNG_DF_REQ;
+        }
+        
+        if (CHNG_DF_RESP(buffer)) {
+            
+            return ControlMessage.CHNG_DF_RESP;
+        }
+        
+        if (HELLO(buffer)) {
+            
+            return ControlMessage.HELLO;
+        }
+        
+        if (HOSTS_REQ(buffer)) {
+            
+            return ControlMessage.HOSTS_REQ;
+        }
+        
+        if (HOSTS_RESP(buffer)) {
+            
+            return ControlMessage.HOSTS_RESP;
+        }
+        
+        if (NACK(buffer)) {
+            
+            return ControlMessage.NACK;
+        }
+        
+        if (PLAIN(buffer)) {
+            
+            return ControlMessage.PLAIN;
+        }
+        
+        return null;
+    }
+    
+/* ------------------------------------ */
+/* ---- CONTROL MESSAGES - GROUP 0 ---- */
+/* ------------------------------------ */
+
+    /**
+     * Checks if the given byte array is a valid {@code ACK} message.
+     * 
+     * @param buffer 
+     *              Byte array with the received message.
+     * 
+     * 
+     * @return 
+     *              <i>true</i> if the message is valid, and <i>false</i>
+     *          otherwise.
+     */
+    public static boolean ACK (byte [] buffer)  {
+        /* The packet has the following structure, being 'x' the data flow:
+            Byte: 0  1  2  3  4
+                  0  x  A  C  K
+        
+            Also, the packet length must be ACK.length (no more, nor less).
+         */
+        return ((buffer.length == ControlMessage.ACK.getLength()) && 
+                (buffer[0] == 0) &&
+                (buffer[2] == 'A') &&
+                (buffer[3] == 'C') &&
+                (buffer[4] == 'K'));
+    }
+    
+    /**
+     * Checks if the given byte array is a valid {@code NACK} message.
+     * 
+     * @param buffer 
+     *              Byte array with the received message.
+     * 
+     * 
+     * @return 
+     *              <i>true</i> if the message is valid, and <i>false</i>
+     *          otherwise.
+     */
+    public static boolean NACK (byte [] buffer)  {
+        /* The packet has the following structure, being 'x' the data flow:
+            Byte: 0  1  2  3  4  5
+                  0  x  N  A  C  K
+        
+            Also, the packet length must be NACK.length (no more, nor less).
+         */
+        return ((buffer.length == ControlMessage.NACK.getLength()) && 
+                (buffer[0] == 0) &&
+                (buffer[2] == 'N') &&
+                (buffer[3] == 'A') &&
+                (buffer[4] == 'C') &&
+                (buffer[5] == 'K'));
+    }
+    
+    /**
+     * Checks if the given byte array is a valid {@code HOSTS_REQ} message.
+     * 
+     * @param buffer 
+     *              Byte array with the received message.
+     * 
+     * 
+     * @return 
+     *              <i>true</i> if the message is valid, and <i>false</i>
+     *          otherwise.
+     */
+    public static boolean HOSTS_REQ (byte [] buffer)  {
+        /* The packet has the following structure, being 'x' the data flow:
+            Byte: 0  1  2  3  4  5  6  7  8  9  10
+                  0  x  H  O  S  T  S  _  R  E  Q
+        
+                Also, the packet length must have the proper length
+            (no more, nor less).
+         */
+        return ((buffer.length == ControlMessage.HOSTS_REQ.getLength()) && 
+                (buffer[0] == 0) &&
+                (buffer[2] == 'H') &&
+                (buffer[3] == 'O') &&
+                (buffer[4] == 'S') &&
+                (buffer[5] == 'T') &&
+                (buffer[6] == 'S') &&
+                (buffer[7] == '_') &&
+                (buffer[8] == 'R') &&
+                (buffer[9] == 'E') &&
+                (buffer[10] == 'Q'));
+    }
+    
+    /**
+     * Checks if the given byte array is a valid {@code HOSTS_REQ} message.
+     * 
+     * @param buffer 
+     *              Byte array with the received message.
+     * 
+     * 
+     * @return 
+     *              <i>true</i> if the message is valid, and <i>false</i>
+     *          otherwise.
+     */
+    public static boolean HOSTS_RESP (byte [] buffer)  {
+        /* The packet has the following structure, being 'x' the data flow:
+            Byte: 0  1  2  3  4  5  6  7  8  9  10 11
+                  0  x  H  O  S  T  S  _  R  E  S  P
+        
+                Also, the packet length must have the proper length
+            (probably more than HOSTS_RESP.length, but no less).
+         */
+        return ((buffer.length >= ControlMessage.HOSTS_RESP.getLength()) && 
+                (buffer[0] == 0) &&
+                (buffer[2] == 'H') &&
+                (buffer[3] == 'O') &&
+                (buffer[4] == 'S') &&
+                (buffer[5] == 'T') &&
+                (buffer[6] == 'S') &&
+                (buffer[7] == '_') &&
+                (buffer[8] == 'R') &&
+                (buffer[9] == 'E') &&
+                (buffer[10] == 'S') &&
+                (buffer[11] == 'P'));
+    }
+    
+    /**
+     * Checks if the given byte array is a valid {@code HELLO} message.
+     * 
+     * @param buffer 
+     *              Byte array with the received message.
+     * 
+     * 
+     * @return 
+     *              <i>true</i> if the message is valid, and <i>false</i>
+     *          otherwise.
+     */
+    public static boolean HELLO (byte [] buffer)  {
+        /* The packet has the following structure, being 'x' the dataFlow and 
+            'p1', 'p2', 'p3' and 'p4' the four positions of the byte array
+            representing the port:
+            Byte: 0  1  2  3  4  5  6  7  8  9  10
+                  0  x  H  E  L  L  O  p1 p2 p3 p4
+        
+                Also, the packet length must have the proper length
+            (no more, nor less).
+         */
+        return ((buffer.length == (ControlMessage.HELLO.getLength() + 4)) && 
+                (buffer[0] == 0) &&
+                (buffer[2] == 'H') &&
+                (buffer[3] == 'E') &&
+                (buffer[4] == 'L') &&
+                (buffer[5] == 'L') &&
+                (buffer[6] == 'O'));
+    }
+    
+    /**
+     * Checks if the given byte array is a valid {@code BYE} message.
+     * 
+     * @param buffer 
+     *              Byte array with the received message.
+     * 
+     * 
+     * @return 
+     *              <i>true</i> if the message is valid, and <i>false</i>
+     *          otherwise.
+     */
+    public static boolean BYE (byte [] buffer)  {
+        /* The packet has the following structure, being 'x' the data flow:
+            Byte: 0  1  2  3  4
+                  0  x  B  Y  E
+        
+                Also, the packet length must have the proper length
+            (no more, nor less).
+         */
+        return ((buffer.length == ControlMessage.BYE.getLength()) && 
+                (buffer[0] == 0) &&
+                (buffer[2] == 'B') &&
+                (buffer[3] == 'Y') &&
+                (buffer[4] == 'E'));
+    }
+    
+    /**
+     * Checks if the given byte array is a valid {@code CHECK_CON} message.
+     * 
+     * @param buffer 
+     *              Byte array with the received message.
+     * 
+     * 
+     * @return 
+     *              <i>true</i> if the message is valid, and <i>false</i>
+     *          otherwise.
+     */
+    public static boolean CHECK_CON (byte [] buffer)  {
+        /* The packet has the following structure, being 'x' the data flow:
+            Byte: 0  1  2  3  4  5  6  7  8  9  10
+                  0  x  C  H  E  C  K  _  C  O  N
+        
+                Also, the packet length must have the proper length
+            (no more, nor less).
+         */
+        return ((buffer.length == ControlMessage.CHECK_CON.getLength()) && 
+                (buffer[0] == 0) &&
+                (buffer[2] == 'C') &&
+                (buffer[3] == 'H') &&
+                (buffer[4] == 'E') &&
+                (buffer[5] == 'C') &&
+                (buffer[6] == 'K') &&
+                (buffer[7] == '_') &&
+                (buffer[8] == 'C') &&
+                (buffer[9] == 'O') &&
+                (buffer[10] == 'N'));
+    }
+    
+    /**
+     * Checks if the given byte array is a valid {@code CHNG_DF_REQ} message.
+     * 
+     * @param buffer 
+     *              Byte array with the received message.
+     * 
+     * 
+     * @return 
+     *              <i>true</i> if the message is valid, and <i>false</i>
+     *          otherwise.
+     */
+    public static boolean CHNG_DF_REQ (byte [] buffer)  {
+        /* The packet has the following structure, being 'x' the data flow and
+         'p' the proposed new data flow id:
+            Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 13
+                  0  x  C  H  N  G  _  D  F  _  R  E  Q  p
+        
+                Also, the packet length must have the proper length
+            (no more, nor less).
+         */
+        return ((buffer.length == ControlMessage.CHNG_DF_REQ.getLength() + 1) && 
+                (buffer[0] == 0) &&
+                (buffer[2] == 'C') &&
+                (buffer[3] == 'H') &&
+                (buffer[4] == 'N') &&
+                (buffer[5] == 'G') &&
+                (buffer[6] == '_') &&
+                (buffer[7] == 'D') &&
+                (buffer[8] == 'F') &&
+                (buffer[9] == '_') &&
+                (buffer[10] == 'R') &&
+                (buffer[11] == 'E') &&
+                (buffer[12] == 'Q'));
+    }
+    
+    /**
+     * Checks if the given byte array is a valid {@code CHNG_DF_RESP} message.
+     * 
+     * @param buffer 
+     *              Byte array with the received message.
+     * 
+     * 
+     * @return 
+     *              <i>true</i> if the message is valid, and <i>false</i>
+     *          otherwise.
+     */
+    public static boolean CHNG_DF_RESP (byte [] buffer)  {
+        /* The packet has the following structure, being 'x' the data flow and
+         'p' the new propsed data flow id (this last argument is optional):
+            Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 13 (14)
+                  0  x  C  H  N  G  _  D  F  _  R  E  S  P  (p)
+        
+                Also, the packet length must have the proper length
+            (no more, nor less).
+         */
+        return (
+                (buffer.length == ControlMessage.CHNG_DF_RESP.getLength())
+                    ||
+                 (buffer.length == ControlMessage.CHNG_DF_RESP.getLength() + 1)
+                )
+                && 
+                (buffer[0] == 0) &&
+                (buffer[2] == 'C') &&
+                (buffer[3] == 'H') &&
+                (buffer[4] == 'N') &&
+                (buffer[5] == 'G') &&
+                (buffer[6] == '_') &&
+                (buffer[7] == 'D') &&
+                (buffer[8] == 'F') &&
+                (buffer[9] == '_') &&
+                (buffer[10] == 'R') &&
+                (buffer[11] == 'E') &&
+                (buffer[12] == 'S') &&
+                (buffer[13] == 'P');
+    }
+    
+/* ----------------------------- */
+/* ---- PLAINTEXT - GROUP 1 ---- */
+/* ----------------------------- */
+    
+    /**
+     * Checks if the given byte array is a valid {@code PLAIN} message.
+     * 
+     * @param buffer 
+     *              Byte array with the received message.
+     * 
+     * 
+     * @return 
+     *              <i>true</i> if the message is valid, and <i>false</i>
+     *          otherwise.
+     */
+    public static boolean PLAIN (byte [] buffer)  {
+        /* The packet has the following structure, being 'x' the data flow:
+            Byte: 0  1  2  3  4  5  6  7  ... buffer.length
+                  0  x  P  L  A  I  N  (plaintext message)
+        
+                Also, the packet length must have the proper length
+            (probably more than HOSTS_RESP.length, but no less).
+         */
+        return ((buffer.length >= ControlMessage.PLAIN.getLength()) && 
+                (buffer[0] == 0) &&
+                (buffer[2] == 'P') &&
+                (buffer[3] == 'L') &&
+                (buffer[4] == 'A') &&
+                (buffer[5] == 'I') &&
+                (buffer[6] == 'N'));
+    }
+}

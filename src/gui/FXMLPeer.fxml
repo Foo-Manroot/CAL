@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<Pane fx:id="mainPane" prefHeight="624.0" prefWidth="1147.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.FXMLPeerController">
+   <children>
+      <TabPane fx:id="roomsTabPane" layoutY="42.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="429.0" prefWidth="600.0">
+         <tabs>
+            <Tab closable="false" text="%tab_initial" />
+            <Tab fx:id="addTab" closable="false" onSelectionChanged="#connect" text="+" />
+         </tabs>
+      </TabPane>
+      <Pane layoutX="13.0" layoutY="537.0" prefHeight="60.0" prefWidth="626.0">
+         <children>
+            <Button layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#connect" text="%button_connect" />
+            <Button layoutX="110.0" layoutY="14.0" mnemonicParsing="false" onAction="#checkConnection" text="%button_check_con" />
+         </children>
+      </Pane>
+      <MenuBar>
+        <menus>
+          <Menu fx:id="menu_options" mnemonicParsing="false" text="%menu_options">
+               <items>
+                  <Menu mnemonicParsing="false" text="%menu_options_language">
+                    <items>
+                      <MenuItem mnemonicParsing="false" onAction="#setSpanish" text="Español" />
+                      <MenuItem mnemonicParsing="false" onAction="#setEnglish" text="English" />
+                    </items>
+                  </Menu>
+               </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+      <ScrollPane fx:id="warningScrollPane" layoutX="632.0" layoutY="42.0" prefHeight="217.0" prefViewportHeight="215.0" prefViewportWidth="508.0" prefWidth="510.0">
+         <content>
+            <TitledPane animated="false" layoutX="639.0" layoutY="42.0" prefHeight="215.0" prefWidth="508.0" text="%warnings_pane_title">
+               <content>
+                  <TextFlow prefHeight="200.0" prefWidth="200.0" />
+               </content>
+            </TitledPane>
+         </content>
+      </ScrollPane>
+      <ScrollPane fx:id="errorsScrollPane" layoutX="632.0" layoutY="259.0" prefHeight="217.0" prefViewportHeight="215.0" prefViewportWidth="508.0" prefWidth="510.0">
+         <content>
+            <TitledPane animated="false" layoutX="639.0" layoutY="42.0" prefHeight="215.0" prefWidth="508.0" text="%errors_pane_title">
+               <content>
+                  <TextFlow prefHeight="200.0" prefWidth="200.0" />
+               </content>
+            </TitledPane>
+         </content>
+      </ScrollPane>
+   </children>
+</Pane>
