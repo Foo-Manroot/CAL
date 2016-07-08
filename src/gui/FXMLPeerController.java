@@ -13,8 +13,6 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.event.Event;
-import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -60,15 +58,14 @@ public class FXMLPeerController implements Initializable {
     @FXML
     private void handleNewTab () {
         
-        /* Creates a new tab right beside the '+' tab */
-        int newTabPos = roomsTabPane.getTabs().indexOf(addTab);
-        Tab newTab = new Tab("Tab" + newTabPos);        
+        if (addTab.isSelected()) {
+         
+            roomsTabPane.getSelectionModel().selectPrevious();
+            
+            connect();
+        }
         
-        newTab.setContent(newRoomPane(Common.RESERVED_DATA_FLOW));
         
-        /* Adds the new tab and selects it */
-        roomsTabPane.getTabs().add(newTabPos, newTab);
-        roomsTabPane.getSelectionModel().select(newTab);
     }
     
     /**
@@ -107,7 +104,7 @@ public class FXMLPeerController implements Initializable {
      * establish it.
      */
     @FXML
-    private void connect () {
+    public void connect () {
         
         Host host = ConnectionDialog.showInputDialog(resourceBundle);
         
@@ -122,6 +119,9 @@ public class FXMLPeerController implements Initializable {
                 
                 logger.logError("Error trying to connect to " + host.toString());
             }
+        } else {
+            
+            roomsTabPane.getSelectionModel().selectFirst();
         }
     }
     
@@ -271,7 +271,7 @@ public class FXMLPeerController implements Initializable {
      */
     private void send (TextArea userInput, byte chatRoom) {
         
-        String message = userInput.getText();
+        String message = (userInput.getText() == null)? "" : userInput.getText();
         
         if (!PeerGUI.peer.sendMessage(message, chatRoom).isEmpty()) {
             
@@ -315,7 +315,7 @@ public class FXMLPeerController implements Initializable {
             logger.logWarning("Closed correctly.\n");
         } else {
             
-            logger.logWarning("Closed with errors.");
+            logger.logWarning("Closed with errors.\n");
         }
         
         PeerGUI.stage.close();

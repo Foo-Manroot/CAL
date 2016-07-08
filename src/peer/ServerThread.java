@@ -154,6 +154,7 @@ public class ServerThread extends Thread {
                 
                 /* Exception thrown when the socket is closed while this thread 
                 is blocked at socket.receive() */
+                logger.logWarning("Server closed.\n");
                 return;
                 
             }catch (IOException ex) {
@@ -452,7 +453,7 @@ public class ServerThread extends Thread {
             byte newDF;
             
             byte [] aux = new byte [4];
-            System.arraycopy(buffer, ControlMessage.HOSTS_REQ.getLength(),
+            System.arraycopy(buffer, ControlMessage.ACK.getLength(),
                              aux, 0, aux.length);
             int portAux = Common.arrayToInt(aux);
             
@@ -470,7 +471,7 @@ public class ServerThread extends Thread {
                     
                     if (sender != null) {
                         
-                        newDF = notif.getExpectedArgs()[0];
+                        newDF = notif.getArgs()[0];
                         /* Changes the data flow of the host from the list */
                         peer.addHostDF(sender, newDF);
                     }
@@ -633,9 +634,9 @@ public class ServerThread extends Thread {
             peer will be listening) */
             int args = ControlMessage.HELLO.getLength();
             byte [] portArray = {buffer[args],
-                            buffer[args + 1],
-                            buffer[args + 2],
-                            buffer[args + 3]};
+                                 buffer[args + 1],
+                                 buffer[args + 2],
+                                 buffer[args + 3]};
             
             /* Creates an object representing the sender host */
             Host sender = new Host(packet.getAddress(), 
@@ -960,7 +961,7 @@ public class ServerThread extends Thread {
                         return;
                     }
                     
-                    proposedDF = notification.getExpectedArgs()[0];
+                    proposedDF = notification.getArgs()[0];
                     
                     /* Changes the data flow of the host from the list */
                     peer.addHostDF(sender, proposedDF);
@@ -998,7 +999,7 @@ public class ServerThread extends Thread {
                             return;
                         }
 
-                        proposedDF = notification.getExpectedArgs()[0];
+                        proposedDF = notification.getArgs()[0];
 
                         /* Changes the data flow of the host from the list */
                         peer.addHostDF(sender, proposedDF);
@@ -1072,7 +1073,7 @@ public class ServerThread extends Thread {
             int args = ControlMessage.PLAIN.getLength();
             byte [] msgAux = new byte [packet.getLength() - args + 6];
             
-            System.arraycopy(packet.getData(), args, msgAux, 0, msgAux.length);
+            System.arraycopy(packet.getData(), args + 4, msgAux, 0, msgAux.length);
             /* Appends a carry return to the end of the message */
             msgAux[msgAux.length - 2] = '\r';
             msgAux[msgAux.length - 1] = '\n';
@@ -1084,8 +1085,8 @@ public class ServerThread extends Thread {
                                                      portAux)
                 ) != null) {
                 
-                /* Shows the message */
-                logger.logMsg("\t" + new String (msgAux), sender, true);
+                /* Shows the message on screen */
+                logger.logMsg(new String (msgAux), sender, true);
                 
                 /* As the sender is known, creates an ACK packet sends it */
                 response = PacketCreator.ACK(sender.getDataFlow(), port);

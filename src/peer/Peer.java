@@ -539,8 +539,7 @@ public class Peer {
     }
     
     /**
-     * Adds a new {@link Host} element with the given data flow ID and creates a
-     * new client if it's needed.
+     * Creates and adds a new {@link Host} element with the given data flow ID.
      * 
      * @param host 
      *             The whose parameters (except the data flow) will be used to

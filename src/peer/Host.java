@@ -204,45 +204,45 @@ public class Host implements Serializable {
                          Peer origin,
                          int tries) {
         float count;
-        DatagramSocket socket;
         DatagramPacket aux;
         Notification notification;
         
         do {
             try {
-                count = 1;
-                /* Creates the socket, sets the destination address to the
-                packet and sends it */ 
-                socket = new DatagramSocket();
-                aux = packet;
-                notification = waitedResponse;
-
-                aux.setAddress(IPaddress);
-                aux.setPort(port);
-
-                socket.send(aux);
-
-                /* Notifies the server and waits for the answer */
-                origin.getServer().addNotification(notification);
-
-                /* Waits until the message comes back or the wait time
-                runs out */
-                while (!notification.isReceived() && count > 0) {
-
-                    Thread.sleep((long) (RTT * count));
-
-                    /* Decreases the counter, so it waits RTT, then 0'8 * RTT,
-                    RTT * 0'2... until it comes to RTT * 0 */
-                    count -= 0.2;
-                }
-
-                socket.close();
                 
-                if (waitedResponse.isReceived()) {
-            
-                    /* Updates the last connection date */
-                    updateLastConnection();
-                    return true;
+                /* Creates the socket, sets the destination address to the
+                packet and sends it */
+                try (DatagramSocket socket = new DatagramSocket()) {
+                    count = 1;
+                    aux = packet;
+                    notification = waitedResponse;
+                    
+                    aux.setAddress(IPaddress);
+                    aux.setPort(port);
+                    
+                    socket.send(aux);
+                    
+                    /* Notifies the server and waits for the answer */
+                    origin.getServer().addNotification(notification);
+                    
+                    /* Waits until the message comes back or the wait time
+                    runs out */
+                    while (!notification.isReceived() && count > 0) {
+                        
+                        Thread.sleep((long) (RTT * count));
+                        
+                        /* Decreases the counter, so it waits RTT, then
+                        0'8 * RTT, RTT * 0'2... until it comes to RTT * 0 */
+                        count -= 0.2;
+                    }
+                    
+                    
+                    if (waitedResponse.isReceived()) {
+                        
+                        /* Updates the last connection date */
+                        updateLastConnection();
+                        return true;
+                    }
                 }
 
             } catch (IOException | InterruptedException ex) {
@@ -251,8 +251,7 @@ public class Host implements Serializable {
                                  + ex.getMessage() + "\n");
             }
             
-            tries--;
-        } while (tries > 0);
+        } while (--tries > 0);
         
         return waitedResponse.isReceived();
     }

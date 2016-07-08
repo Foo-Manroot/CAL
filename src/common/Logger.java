@@ -1,5 +1,6 @@
 package common;
 
+import gui.PeerGUI;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -8,9 +9,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Date;
+import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import javafx.application.Platform;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
@@ -329,6 +335,21 @@ public class Logger {
                     Platform.runLater(() -> {
                         
                         Color colour;
+                        /* Adds a context menu so a new connection can be 
+                        done with the selected host */
+                        MenuItem connectMenu = new MenuItem(
+                                ResourceBundle.getBundle(Common.resourceBundle)
+                                        .getString("private_conv_menu")
+                                );
+                        
+                        connectMenu.setOnAction(e -> {
+                            
+                            /* Starts a new conversation */
+                            PeerGUI.peer.startConversation(host);
+                        });
+                        
+                        ContextMenu context = new ContextMenu(connectMenu);
+                        Text text;
                         
                         /* Searches the host on the list to get its colour. If
                         it wasn't there, adds it. */
@@ -340,7 +361,15 @@ public class Logger {
                             colour = hostsColours.get(host);
                         }
                         
-                        Text text = new Text(msg);
+                        text = new Text(msg);
+                        
+                        text.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+                            
+                            if (e.getButton() == MouseButton.SECONDARY) {
+                                
+                                context.show(text, e.getScreenX(), e.getScreenY());
+                            }
+                        });
                         
                         text.setFill(colour);
                         

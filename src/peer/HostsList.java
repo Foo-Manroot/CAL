@@ -180,7 +180,7 @@ public class HostsList implements Serializable {
             
             if ((h.getDataFlow() == dataFlow) &&
                  h.getIPaddress().equals(adddress) &&
-                 h.getDataFlow() == port) {
+                 h.getPort()== port) {
                 
                 return h;
             }

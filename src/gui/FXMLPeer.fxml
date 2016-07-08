@@ -13,7 +13,7 @@
       <TabPane fx:id="roomsTabPane" layoutY="42.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="429.0" prefWidth="600.0">
          <tabs>
             <Tab closable="false" text="%tab_initial" />
-            <Tab fx:id="addTab" closable="false" onSelectionChanged="#connect" text="+" />
+            <Tab fx:id="addTab" closable="false" onSelectionChanged="#handleNewTab" text="+" />
          </tabs>
       </TabPane>
       <Pane layoutX="13.0" layoutY="537.0" prefHeight="60.0" prefWidth="626.0">

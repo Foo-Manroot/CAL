@@ -74,4 +74,14 @@ public class ConnectionObserver {
             guiControllers.add(controller);
         }
     }
+    
+    /**
+     * Returns the list with all the {@link FXMLPeerController}.
+     * 
+     * @return 
+     */
+    public ConcurrentLinkedQueue<FXMLPeerController> getViewControllers () {
+        
+        return guiControllers;
+    }
 }

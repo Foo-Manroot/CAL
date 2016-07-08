@@ -41,7 +41,7 @@ public class Notification {
     /**
      * Expected value of the arguments, if any.
      */
-    private final byte [] expectedArgs;
+    private final byte [] args;
         
 /* --------------------------------------- */
 /* ---- END OF ATTRIBUTES DECLARATION ---- */
@@ -67,7 +67,7 @@ public class Notification {
         this.sourceIP = sourceIP;
         this.sourceDataFlow = sourceDataFlow;
         this.message = message;
-        expectedArgs = null;
+        args = null;
     }
     
     /**
@@ -83,18 +83,18 @@ public class Notification {
      *              {@link ControlMessage} expected as the answer coming from 
      *          the specified address and data flow.
      * 
-     * @param expectedArgs
+     * @param args
      *              A byte array with the expected value of the arguments.
      */
     public Notification (InetAddress sourceIP,
                          byte sourceDataFlow,
                          ControlMessage message,
-                         byte [] expectedArgs) {
+                         byte [] args) {
         
         this.sourceIP = sourceIP;
         this.sourceDataFlow = sourceDataFlow;
         this.message = message;
-        this.expectedArgs = expectedArgs;
+        this.args = args;
     }
     
     /**
@@ -160,7 +160,7 @@ public class Notification {
         
         if (hasArgs()) {
             
-            msg.append("\n\tExpected args.: ").append(expectedArgs);
+            msg.append("\n\tExpected args.: ").append(args);
         } else {
             
             msg.append("\n\tNo args. expected.");
@@ -216,9 +216,9 @@ public class Notification {
      * @return 
      *              The value of {@code expectedArgs}.
      */
-    public byte [] getExpectedArgs () {
+    public byte [] getArgs () {
         
-        return this.expectedArgs;
+        return this.args;
     }
     
     /**
@@ -229,7 +229,7 @@ public class Notification {
      */
     public boolean hasArgs () {
         
-        return (expectedArgs != null);
+        return (args != null);
     }
     
     /**
