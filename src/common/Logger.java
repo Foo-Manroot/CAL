@@ -13,6 +13,7 @@ import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseButton;
@@ -344,8 +345,18 @@ public class Logger {
                         
                         connectMenu.setOnAction(e -> {
                             
+                            Alert alert = new Alert (Alert.AlertType.ERROR);
+                            String text = ResourceBundle
+                                            .getBundle(Common.resourceBundle)
+                                            .getString("error_private_conv");
+                            
                             /* Starts a new conversation */
-                            PeerGUI.peer.startConversation(host);
+                            if (!PeerGUI.peer.startConversation(host)) {
+                                
+                                logError(text);
+                                alert.setContentText(text);
+                                alert.show();
+                            }
                         });
                         
                         ContextMenu context = new ContextMenu(connectMenu);

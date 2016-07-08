@@ -202,6 +202,17 @@ public class Peer {
             hostsList.add(host);
         }
         
+        /* Asks this new peer for a list of another peers on the rooms and 
+        adds them to the list, too */
+        packet = PacketCreator.HOSTS_REQ(chatRoom, server.getPort());
+        notif = new Notification(host.getIPaddress(),
+                                 chatRoom, 
+                                 ControlMessage.HOSTS_RESP);
+        
+        retVal = (retVal)? 
+                    host.send(packet, notif, this, 1) 
+                  : false;
+        
         return retVal;
     }
     
@@ -275,6 +286,12 @@ public class Peer {
     public boolean startConversation (Host host) {
         
         byte proposedFlow = findFreeDataFlow();
+        
+        if (proposedFlow == Common.RESERVED_DATA_FLOW) {
+            
+            return false;
+        }
+        
         /* Starts a negotiation with the given host on the known dataFlow
         and tries to change it */
         DatagramPacket packet = PacketCreator.CHNG_DF_REQ(host.getDataFlow(),

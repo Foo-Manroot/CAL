@@ -171,7 +171,7 @@ public class PacketCreator {
      *              A completely formed {@link DatagramPacket}.
      */
     public static DatagramPacket HOSTS_RESP (byte dataFlow,
-                                                byte [] info) {
+                                             byte [] info) {
         
         /* Creates a buffer of HOSTS_RESP.length + info.length */
         byte [] buffer = new byte [ControlMessage.HOSTS_RESP.getLength()

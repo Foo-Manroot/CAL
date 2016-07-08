@@ -193,7 +193,7 @@ public class FXMLPeerController implements Initializable {
             the message text area (where the messages will be displayed),
             the user input text area (where the user will type the message)
             and the bottom pane, with all the buttons for the conversation 
-                (send, disconnect...).
+            (send, disconnect...).
         */
         TextFlow msgTextArea = new TextFlow();
         msgTextArea.setId("msgTextArea" + chatRoomID);
@@ -275,7 +275,7 @@ public class FXMLPeerController implements Initializable {
         
         if (!PeerGUI.peer.sendMessage(message, chatRoom).isEmpty()) {
             
-            logger.logWarning("Some peers may have not received the message.");
+            logger.logWarning("Some peers may have not received the message.\n");
         }
         
         logger.logMsg("You:\n\t" + message + "\n", chatRoom);

@@ -280,21 +280,22 @@ public class HostsList implements Serializable {
      * 
      * 
      * @return 
-     *              A list with all the added hosts.
+     *              A list with all the added hosts, or <i>null</i> if the 
+     *          packet wasn't correctly formed.
      */
     public ConcurrentLinkedQueue<Host> readPacket (byte [] packet) {
         
         /* Divides the packet into smaller pieces of 7 bytes to create new 
         hosts and adds them to the list, if they wasn't already on it */
         byte [] buffer = new byte [9];
-        ConcurrentLinkedQueue<Host> knownHosts = hosts;
+        //ConcurrentLinkedQueue<Host> knownHosts = hosts;
         ConcurrentLinkedQueue<Host> changes = new ConcurrentLinkedQueue<>();
         Host auxHost;
         
         /* If the packet wasn't complete, returns */
         if ((packet.length % 9) != 0) {
 
-            return changes;
+            return null;
         }
         
         /* Creates a new host until no more bytes are left */
@@ -309,29 +310,32 @@ public class HostsList implements Serializable {
                 if (localPeer != null &&
                     auxHost.getPort() != localPeer.getServer().getPort() &&
                     !auxHost.getIPaddress().equals(
-                            localPeer.getServer().getSocket().getInetAddress()
-                            )
+                            localPeer.getServer().getSocket().getInetAddress())
                     ) {
                     
                     /* If the host was correctly created, searches it and
                     adds it */
-                    if (find(auxHost, knownHosts) < 0) {
+                    if (find(auxHost, hosts) < 0) {
 
-                        knownHosts.add(auxHost);
-                        changes.add(auxHost);
+                        /* Sends a HELLO message. If they answer back, they're
+                        added to the list */
+                        if (localPeer.connect(auxHost)) {
+                            
+                            changes.add(auxHost);
+                        }
                     }
                 }
             }
         }
         
-        hosts = knownHosts;
+        //hosts = knownHosts;
         
         return changes;
     }
     
     /**
      * Reads the file containing all the known hosts (if exists) and appends 
-     * them to the existing lis or creates a new one, depending on the parameter
+     * them to the existing list or creates a new one, depending on the parameter
      * {@code append}.
      * 
      * 

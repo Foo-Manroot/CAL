@@ -155,7 +155,7 @@ public class ServerThread extends Thread {
                 /* Exception thrown when the socket is closed while this thread 
                 is blocked at socket.receive() */
                 logger.logWarning("Server closed.\n");
-                return;
+                break;
                 
             }catch (IOException ex) {
             
@@ -590,17 +590,26 @@ public class ServerThread extends Thread {
                 notifications.remove(notif);
                 
                 /* Extracts and adds the information on the list */
-                addedHosts = peer.getHostsList().readPacket(info);
+                if ((addedHosts = peer.getHostsList().readPacket(info)) != null) {
                 
-                if (!addedHosts.isEmpty()) {
-                    
-                    logger.logWarning("New hosts added: \n");
-                    
-                    /* Shows a message listing the added hosts */
-                    for (Host h : addedHosts) {
+                    if (!addedHosts.isEmpty()) {
 
-                        logger.logWarning(h.toString());
+                        logger.logWarning("New hosts discovered on the room:\n");
+
+                        /* Shows a message listing the added hosts */
+                        for (Host h : addedHosts) {
+
+                            logger.logWarning(h.toString());
+                        }
                     }
+                } else {
+                    
+                    /* Malformed packet */
+                    logger.logWarning("Malformed HOSTS_RESP packet. "
+                                + "\nFrom " + packet.getAddress() + ":"
+                                + "\n\tText:" + new String(buffer)
+                                + "\n\tBytes: " + Arrays.toString(buffer) 
+                                + "\n");
                 }
                 
             } else {
