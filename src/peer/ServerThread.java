@@ -799,7 +799,8 @@ public class ServerThread extends Thread {
 
                     response = PacketCreator.CHNG_DF_RESP(dataFlow, 
                                                           (byte) 1,
-                                                          proposedDF);
+                                                          proposedDF,
+                                                          port);
                     
                     /* Sends the message */
                     notifications.add(expectedAnswer);
@@ -825,7 +826,8 @@ public class ServerThread extends Thread {
 
                     response = PacketCreator.CHNG_DF_RESP(dataFlow, 
                                                           (byte) 1,
-                                                          proposedDF);
+                                                          proposedDF,
+                                                          port);
                 } else {
                     
                     /* REJECTS THE PROPOSED ID.
@@ -851,7 +853,8 @@ public class ServerThread extends Thread {
                     
                     response = PacketCreator.CHNG_DF_RESP(dataFlow, 
                                                           (byte) 1,
-                                                          proposedDF);
+                                                          proposedDF,
+                                                          port);
                 }
                 
                 /* Sends the message */
@@ -979,7 +982,8 @@ public class ServerThread extends Thread {
 
                         response = PacketCreator.CHNG_DF_RESP(dataFlow,
                                                               proposedDF,
-                                                              proposedDF);
+                                                              proposedDF,
+                                                              port);
 
                         /* Sends the message and adds te notification to the
                         list */

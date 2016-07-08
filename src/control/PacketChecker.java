@@ -146,14 +146,16 @@ public class PacketChecker {
      *          otherwise.
      */
     public static boolean HOSTS_REQ (byte [] buffer)  {
-        /* The packet has the following structure, being 'x' the data flow:
-            Byte: 0  1  2  3  4  5  6  7  8  9  10
-                  0  x  H  O  S  T  S  _  R  E  Q
+        /* The packet has the following structure, being 'x' the data flow and 
+          p1, p2... the bytes of the port where the answer is expected (p1 is
+          the highest byte)::
+            Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 13 14
+                  0  x  H  O  S  T  S  _  R  E  Q  p1 p2 p3 p4
         
                 Also, the packet length must have the proper length
             (no more, nor less).
          */
-        return ((buffer.length == ControlMessage.HOSTS_REQ.getLength()) && 
+        return ((buffer.length == ControlMessage.HOSTS_REQ.getLength() + 4) && 
                 (buffer[0] == 0) &&
                 (buffer[2] == 'H') &&
                 (buffer[3] == 'O') &&
@@ -241,14 +243,16 @@ public class PacketChecker {
      *          otherwise.
      */
     public static boolean BYE (byte [] buffer)  {
-        /* The packet has the following structure, being 'x' the data flow:
-            Byte: 0  1  2  3  4
-                  0  x  B  Y  E
+        /* The packet has the following structure, being 'x' the data flow and
+          p1, p2... the bytes of the port where the answer is expected (p1 is
+          the highest byte):
+            Byte: 0  1  2  3  4  5  6  7  8
+                  0  x  B  Y  E  p1 p2 p3 p4
         
                 Also, the packet length must have the proper length
             (no more, nor less).
          */
-        return ((buffer.length == ControlMessage.BYE.getLength()) && 
+        return ((buffer.length == ControlMessage.BYE.getLength() + 4) && 
                 (buffer[0] == 0) &&
                 (buffer[2] == 'B') &&
                 (buffer[3] == 'Y') &&
@@ -299,15 +303,16 @@ public class PacketChecker {
      *          otherwise.
      */
     public static boolean CHNG_DF_REQ (byte [] buffer)  {
-        /* The packet has the following structure, being 'x' the data flow and
-         'p' the proposed new data flow id:
-            Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 13
-                  0  x  C  H  N  G  _  D  F  _  R  E  Q  p
+        /* The packet has the following structure, being 'x' the data flow, 'f'
+          the proposed new data flow id and p1, p2... the bytes of the port
+          where the answer is expected (p1 is the highest byte):
+            Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17
+                  0  x  C  H  N  G  _  D  F  _  R  E  Q  p1 p2 p3 p4 f
         
                 Also, the packet length must have the proper length
             (no more, nor less).
          */
-        return ((buffer.length == ControlMessage.CHNG_DF_REQ.getLength() + 1) && 
+        return ((buffer.length == ControlMessage.CHNG_DF_REQ.getLength() + 5) && 
                 (buffer[0] == 0) &&
                 (buffer[2] == 'C') &&
                 (buffer[3] == 'H') &&
@@ -335,17 +340,19 @@ public class PacketChecker {
      */
     public static boolean CHNG_DF_RESP (byte [] buffer)  {
         /* The packet has the following structure, being 'x' the data flow and
-         'p' the new propsed data flow id (this last argument is optional):
-            Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 13 (14)
-                  0  x  C  H  N  G  _  D  F  _  R  E  S  P  (p)
+         'f' the new propsed data flow id (this last argument is optional) and 
+          p1, p2... the bytes of the port where the answer is expected (p1 is
+          the highest byte):
+            Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 (18)
+                  0  x  C  H  N  G  _  D  F  _  R  E  S  P  p1 p2 p3 p4 (f)
         
                 Also, the packet length must have the proper length
             (no more, nor less).
          */
         return (
-                (buffer.length == ControlMessage.CHNG_DF_RESP.getLength())
+                (buffer.length == ControlMessage.CHNG_DF_RESP.getLength() + 4)
                     ||
-                 (buffer.length == ControlMessage.CHNG_DF_RESP.getLength() + 1)
+                 (buffer.length == ControlMessage.CHNG_DF_RESP.getLength() + 5)
                 )
                 && 
                 (buffer[0] == 0) &&

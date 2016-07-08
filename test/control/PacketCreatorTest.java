@@ -19,6 +19,8 @@ import static org.junit.Assert.*;
  */
 public class PacketCreatorTest {
     
+    private final int port = 1234;
+    
     /**
      * Test of voidPacket method, of class PacketCreator.
      */
@@ -68,12 +70,15 @@ public class PacketCreatorTest {
     @Test
     public void testNewHOSTS_REQ() {
         System.out.println("newHOSTS_REQ");
+        
         byte dataFlow = 1;
+        byte [] aux = Common.intToArray(port);
         
         byte [] expResult = {0, dataFlow, 'H', 'O', 'S', 'T', 'S', '_', 
-                            'R', 'E', 'Q'};
+                            'R', 'E', 'Q',
+                             aux [0], aux[1], aux[2], aux[3]};
         
-        DatagramPacket result = PacketCreator.HOSTS_REQ(dataFlow);
+        DatagramPacket result = PacketCreator.HOSTS_REQ(dataFlow, port);
         
         assertArrayEquals(expResult, result.getData());
     }
@@ -131,11 +136,14 @@ public class PacketCreatorTest {
     @Test
     public void testNewBYE() {
         System.out.println("newBYE");
+        
         byte dataFlow = 1;
+        byte aux [] = Common.intToArray(port);
         
-        byte [] expResult = {0, dataFlow, 'B', 'Y', 'E'};
+        byte [] expResult = {0, dataFlow, 'B', 'Y', 'E',
+                             aux [0], aux[1], aux[2], aux[3]};
         
-        DatagramPacket result = PacketCreator.BYE(dataFlow);
+        DatagramPacket result = PacketCreator.BYE(dataFlow, port);
         
         assertArrayEquals(expResult, result.getData());
     }
@@ -165,11 +173,16 @@ public class PacketCreatorTest {
         
         byte proposedFlow = 2;
         byte dataFlow = 1;
+        byte [] aux = Common.intToArray(port);
         
         byte [] expResult = {0, dataFlow, 'C', 'H', 'N', 'G', '_',
-                             'D', 'F', '_', 'R', 'E', 'Q', proposedFlow};
+                             'D', 'F', '_', 'R', 'E', 'Q', 
+                             aux [0], aux[1], aux[2], aux[3],
+                             proposedFlow};
         
-        DatagramPacket result = PacketCreator.CHNG_DF_REQ(dataFlow, proposedFlow);
+        DatagramPacket result = PacketCreator.CHNG_DF_REQ(dataFlow,
+                                                          proposedFlow,
+                                                          port);
         
         assertArrayEquals(expResult, result.getData());
     }
@@ -184,20 +197,30 @@ public class PacketCreatorTest {
         byte proposedFlow = 2;
         byte accepted = 0;
         byte dataFlow = 1;
+        byte [] aux = Common.intToArray(port);
         
         byte [] expResult = {0, dataFlow, 'C', 'H', 'N', 'G', '_',
-                             'D', 'F', '_', 'R', 'E', 'S', 'P', proposedFlow};
+                             'D', 'F', '_', 'R', 'E', 'S', 'P', 
+                             aux [0], aux[1], aux[2], aux[3],
+                             proposedFlow};
         
-        DatagramPacket result = PacketCreator.CHNG_DF_RESP(dataFlow, accepted, proposedFlow);
+        DatagramPacket result = PacketCreator.CHNG_DF_RESP(dataFlow,
+                                                           accepted,
+                                                           proposedFlow,
+                                                           port);
         
         assertArrayEquals(expResult, result.getData());
         
         System.out.println("newCHNG_DF_RESP - Accepted proposal");
         accepted = 1;
         expResult = new byte [] {0, dataFlow, 'C', 'H', 'N', 'G', '_',
-                                'D', 'F', '_', 'R', 'E', 'S', 'P'};
+                                'D', 'F', '_', 'R', 'E', 'S', 'P',
+                                aux [0], aux[1], aux[2], aux[3]};
         
-        result = PacketCreator.CHNG_DF_RESP(dataFlow, accepted, proposedFlow);
+        result = PacketCreator.CHNG_DF_RESP(dataFlow,
+                                            accepted,
+                                            proposedFlow,
+                                            port);
         
         assertArrayEquals(expResult, result.getData());
     }

@@ -106,27 +106,35 @@ public class PacketCreator {
      *              The flow of this packet. This byte will be on the second
      *          position of the buffer, after the message code.
      * 
+     * @param port 
+     *              Port where the answer is expected.
+     * 
      * 
      * @return 
      *              A completely formed {@link DatagramPacket}.
      */
-    public static DatagramPacket HOSTS_REQ (byte dataFlow) {
+    public static DatagramPacket HOSTS_REQ (byte dataFlow, int port) {
         
-        /* Creates a buffer of HOSTS_REQ.length */
-        byte [] buffer = new byte [ControlMessage.HOSTS_REQ.getLength()];
+        /* Creates a buffer of HOSTS_REQ.length, plus the length for the port */
+        byte [] buffer = new byte [ControlMessage.HOSTS_REQ.getLength() + 4];
+        
         byte [] aux = ControlMessage.HOSTS_REQ.toString().getBytes();
+        byte [] portAux = Common.intToArray(port);
+        
         DatagramPacket packet;
         
         /* Fills the data. The packet has the following structure, being 'x' the
-            parameter dataFlow:
-            Byte: 0  1  2  3  4  5  6  7  8  9  10
-                  0  x  H  O  S  T  S  _  R  E  Q
+            parameter dataFlow and p1, p2... the bytes of the port where the 
+            answer is expected (p1 is the highest byte):
+            Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 13 14
+                  0  x  H  O  S  T  S  _  R  E  Q  p1 p2 p3 p4
         */
         buffer[0] = 0;
         buffer[1] = dataFlow;
         
-        /* Fills the control message */
+        /* Fills the control message  and adds the parameter */
         System.arraycopy(aux, 0, buffer, 2, aux.length);
+        System.arraycopy(portAux, 0, buffer, aux.length + 2, portAux.length);
         
         packet = new DatagramPacket(buffer, buffer.length);
         
@@ -233,27 +241,35 @@ public class PacketCreator {
      *              The flow of this packet. This byte will be on the second
      *          position of the buffer, after the message code.
      * 
+     * @param port 
+     *              Port where the answer is expected.
+     * 
      * 
      * @return 
      *              A completely formed {@link DatagramPacket}.
      */
-    public static DatagramPacket BYE (byte dataFlow) {
+    public static DatagramPacket BYE (byte dataFlow, int port) {
         
-        /* Creates a buffer of BYE.length */
-        byte [] buffer = new byte [ControlMessage.BYE.getLength()];
+        /* Creates a buffer of BYE.length, plus the length of the port array */
+        byte [] buffer = new byte [ControlMessage.BYE.getLength() + 4];
+        
         byte [] aux = ControlMessage.BYE.toString().getBytes();
+        byte [] portAux = Common.intToArray(port);
+        
         DatagramPacket packet;
         
         /* Fills the data. The packet has the following structure, being 'x' the
-            parameter dataFlow:
-            Byte: 0  1  2  3  4
-                  0  x  B  Y  E
+            parameter dataFlow and p1, p2... the bytes of the port where the 
+            answer is expected (p1 is the highest byte):
+            Byte: 0  1  2  3  4  5  6  7  8
+                  0  x  B  Y  E  p1 p2 p3 p4
         */
         buffer[0] = 0;
         buffer[1] = dataFlow;
         
         /* Fills the control message */
         System.arraycopy(aux, 0, buffer, 2, aux.length);
+        System.arraycopy(portAux, 0, buffer, aux.length + 2, portAux.length);
         
         packet = new DatagramPacket(buffer, buffer.length);
         
@@ -306,29 +322,40 @@ public class PacketCreator {
      * @param proposedFlow 
      *              The new data flow proposed to the destination peer.
      * 
+     * @param port
+     *              Port where the sender will wait for an answer.
+     * 
+     * 
      * 
      * @return 
      *              A completely formed {@link DatagramPacket}.
      */
     public static DatagramPacket CHNG_DF_REQ (byte dataFlow,
-                                                 byte proposedFlow) {
+                                              byte proposedFlow,
+                                              int port) {
         
-        /* Creates a buffer of CHNG_DF_REQ.length, plus the parameter 
-        proposedFlow (1 Byte) */
-        byte [] buffer = new byte [ControlMessage.CHNG_DF_REQ.getLength() + 1];
+        /* Creates a buffer of CHNG_DF_REQ.length, plus the argument 
+        proposedFlow (1 Byte) and the port as the other argument (4 bytes) */
+        byte [] buffer = new byte [ControlMessage.CHNG_DF_REQ.getLength() + 5];
+        
         byte [] aux = ControlMessage.CHNG_DF_REQ.toString().getBytes();
+        byte [] portAux = Common.intToArray(port);
+        
         DatagramPacket packet;
         
         /* Fills the data. The packet has the following structure, being 'x' the
-            parameter dataFlow and 'p' the parameter proposedFlow:
-            Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 13
-                  0  x  C  H  N  G  _  D  F  _  R  E  Q  p
+            parameter dataFlow, 'f' the parameter proposedFlow and p1, p2... 
+            the bytes of the port where the answer is expected (p1 is the 
+            highest byte):
+            Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17
+                  0  x  C  H  N  G  _  D  F  _  R  E  Q  p1 p2 p3 p4 f
         */
         buffer[0] = 0;
         buffer[1] = dataFlow;
         
-        /* Fills the control message */
+        /* Fills the control message and adds the port */
         System.arraycopy(aux, 0, buffer, 2, aux.length);
+        System.arraycopy(portAux, 0, buffer, aux.length + 2, portAux.length);
         
         /* Adds the parameter on the last byte */
         buffer [buffer.length - 1] = proposedFlow;
@@ -355,35 +382,45 @@ public class PacketCreator {
      *          parameter {@code accepted} wasn't <b>1</b>, this parameter won't
      *          be used.
      * 
+     * @param port
+     *              Port where the answer is expected.
+     * 
      * 
      * @return 
      *              A completely formed {@link DatagramPacket}.
      */
     public static DatagramPacket CHNG_DF_RESP (byte dataFlow,
                                                byte accepted,
-                                               byte proposedFlow) {
+                                               byte proposedFlow,
+                                               int port) {
         
         /* If the proposal was rejected, the buffer must have an extra Byte to 
         store the second argument. */
         int packet_size = (accepted == 0)? 
-                            ControlMessage.CHNG_DF_RESP.getLength() + 1:
-                            ControlMessage.CHNG_DF_RESP.getLength();
+                            ControlMessage.CHNG_DF_RESP.getLength() + 5:
+                            ControlMessage.CHNG_DF_RESP.getLength() + 4;
         
         /* Creates a buffer of the needed length */
         byte [] buffer = new byte [packet_size];
+        
         byte [] aux = ControlMessage.CHNG_DF_RESP.toString().getBytes();
+        byte [] portAux = Common.intToArray(port);
+        
         DatagramPacket packet;
         
         /* Fills the data. The packet has the following structure, being 'x' the
-          parameter dataFlow and 'p' the new proposed flow id (only if needed):
-            Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 13 (14)
-                  0  x  C  H  N  G  _  D  F  _  R  E  S  P  (p)
+          parameter dataFlow, 'f' the new proposed flow id (only if needed) 
+          and p1, p2... the bytes of the port where the answer is expected (p1 
+          is the highest byte):
+            Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 (18)
+                  0  x  C  H  N  G  _  D  F  _  R  E  S  P  p1 p2 p3 p4 (f)
         */
         buffer[0] = 0;
         buffer[1] = dataFlow;
         
-        /* Fills the control message */
+        /* Fills the control message and */
         System.arraycopy(aux, 0, buffer, 2, aux.length);
+        System.arraycopy(portAux, 0, buffer, aux.length + 2, portAux.length);
         
         /* Adds the required arguments */        
         if (accepted == 0) {

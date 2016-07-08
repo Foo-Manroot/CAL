@@ -16,6 +16,8 @@ import static org.junit.Assert.*;
  * @author Miguel
  */
 public class PacketCheckerTest {
+    
+    private final int port = 1234;
 
     /**
      * Test of ACK method, of class PacketChecker.
@@ -55,7 +57,7 @@ public class PacketCheckerTest {
         System.out.println("checkHOSTS_REQ");
         
         byte dataFlow = 1;
-        byte[] buffer = PacketCreator.HOSTS_REQ(dataFlow).getData();
+        byte[] buffer = PacketCreator.HOSTS_REQ(dataFlow, port).getData();
         
         boolean result = PacketChecker.HOSTS_REQ(buffer);
         
@@ -106,7 +108,7 @@ public class PacketCheckerTest {
         System.out.println("checkBYE");
         
         byte dataFlow = 1;
-        byte[] buffer = PacketCreator.BYE(dataFlow).getData();
+        byte[] buffer = PacketCreator.BYE(dataFlow, port).getData();
         
         boolean result = PacketChecker.BYE(buffer);
         
@@ -137,7 +139,9 @@ public class PacketCheckerTest {
         
         byte dataFlow = 1;
         byte proposedFlow = 2;
-        byte[] buffer = PacketCreator.CHNG_DF_REQ(dataFlow, proposedFlow).getData();
+        byte[] buffer = PacketCreator.CHNG_DF_REQ(dataFlow,
+                                                  proposedFlow,
+                                                  port).getData();
         
         boolean result = PacketChecker.CHNG_DF_REQ(buffer);
         
@@ -153,14 +157,20 @@ public class PacketCheckerTest {
         
         byte dataFlow = 1;
         byte accepted = 1;
-        byte[] buffer = PacketCreator.CHNG_DF_RESP(dataFlow, accepted, dataFlow).getData();
+        byte[] buffer = PacketCreator.CHNG_DF_RESP(dataFlow,
+                                                   accepted,
+                                                   dataFlow,
+                                                   port).getData();
         
         boolean result = PacketChecker.CHNG_DF_RESP(buffer);
         
         assertTrue(result);
         
         accepted = 0;
-        buffer = PacketCreator.CHNG_DF_RESP(dataFlow, accepted, dataFlow).getData();
+        buffer = PacketCreator.CHNG_DF_RESP(dataFlow,
+                                            accepted,
+                                            dataFlow,
+                                            port).getData();
         
         result = PacketChecker.CHNG_DF_RESP(buffer);
         

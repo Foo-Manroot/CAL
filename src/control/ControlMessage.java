@@ -29,6 +29,12 @@ CODE 0 GROUP:
     
     /**
      * Asks another peer for its hosts list to send back.
+     * 
+     * <p>
+     * This method has 4 bytes as a single argument: the port where the answer
+     * has to be sent. This bytes start at {@code packet[11]}, being that 
+     * position the highest byte of the integer that represents the port, and 
+     * {@code packet[14]} the lowest byte.
      */
     HOSTS_REQ (0, 11),
     
@@ -54,6 +60,12 @@ CODE 0 GROUP:
      * Request for "disconnection". If the receiptor peer sends back an ACK 
      * message, it means that it deleted the sender peer into its hosts list 
      * and no more communication will be done.
+     * 
+     * <p>
+     * This method has 4 bytes as a single argument: the port where the answer
+     * has to be sent. This bytes start at {@code packet[6]}, being that 
+     * position the highest byte of the integer that represents the port, and 
+     * {@code packet[9]} the lowest byte.
      */
     BYE (0, 5),
     
@@ -80,14 +92,20 @@ CODE 0 GROUP:
      * This message asks the destination peer to change the data flow id.
      * 
      * <p>
-     * This message will have one argument on the next byte (the 14th. byte on 
-     * the array), and will tell the destination peer the new data flow id
-     * proposed by the origin peer.
+     * This message will have one argument on the 17th. byte of the array, 
+     * and will tell the destination peer the new data flow id proposed by 
+     * the origin peer, after the 4 bytes reserved to the port number.
      * 
      * <p>
      * The answer to this message should be a {@code CHNG_DF_RESP} with the
      * proper arguments so the origin peer can know if the request has been
      * accepted or rejected.
+     * 
+     * <p>
+     * This method has 4 bytes as the first argument: the port where the answer
+     * has to be sent. This bytes start at {@code packet[13]}, being that 
+     * position the highest byte of the integer that represents the port, and 
+     * {@code packet[16]} the lowest byte.
      */
     CHNG_DF_REQ (0, 13),
     
@@ -95,16 +113,22 @@ CODE 0 GROUP:
      * This message is a response for a data flow id change from another peer.
      * 
      * <p>
-     * This message can one argument on the next byte (the 14th. 
-     * byte on the array), and will tell the destination peer if the proposed
-     * id was <b>rejected</b>, in case the 14th. byte exists , or 
-     * <b>accepted</b>, in case the packet is just 13 bytes long.
+     * This message can one argument on the 18th. byte of the array, and will 
+     * tell the destination peer if the proposed id was <b>rejected</b>, in 
+     * case the 18th. byte exists , or <b>accepted</b>, in case the packet is 
+     * just 17 bytes long.
      * 
      * <p>
      * If the request has been rejected, the packet will have an extra byte (the
      * 14th byte) with another data flow as a counteroffer.
-     * In this byte the destination peer (the one who rejected the origin peer's
+     * In this byte the destination peer (the one who rejected the origin peer
      * proposal) will send another data flow id, as the origin peer did before.
+     * 
+     * <p>
+     * This method has 4 bytes as a single argument: the port where the answer
+     * has to be sent. This bytes start at {@code packet[14]}, being that 
+     * position the highest byte of the integer that represents the port, and
+     * {@code packet[17]} the lowest byte.
      */
     CHNG_DF_RESP (0, 14),
     

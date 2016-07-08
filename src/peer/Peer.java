@@ -230,7 +230,7 @@ public class Peer {
         for (Host h : hosts) {
             
             /* Sets the parameters and sends the packet */
-            packet = PacketCreator.BYE(chatID);
+            packet = PacketCreator.BYE(chatID, server.getPort());
             waitedResponse = new Notification(h.getIPaddress(),
                                               h.getDataFlow(),
                                               ControlMessage.ACK);
@@ -278,7 +278,8 @@ public class Peer {
         /* Starts a negotiation with the given host on the known dataFlow
         and tries to change it */
         DatagramPacket packet = PacketCreator.CHNG_DF_REQ(host.getDataFlow(),
-                                                          proposedFlow);
+                                                          proposedFlow,
+                                                          server.getPort());
         
         Notification expectedAnswer = new Notification(host.getIPaddress(),
                                                        host.getDataFlow(),
@@ -309,7 +310,7 @@ public class Peer {
         /* Sends a message to the host trying to end the conversation. If,
         after 4 tries, the host didn't responded, it's removed from the list
         anyways */
-        packet = PacketCreator.BYE(host.getDataFlow());
+        packet = PacketCreator.BYE(host.getDataFlow(), server.getPort());
         waitedResponse = new Notification(host.getIPaddress(),
                                           host.getDataFlow(),
                                           ControlMessage.ACK);
@@ -352,7 +353,8 @@ public class Peer {
      */
     public boolean updateHosts (Host receiver) {
          
-        DatagramPacket packet = PacketCreator.HOSTS_REQ(receiver.getDataFlow());
+        DatagramPacket packet = PacketCreator.HOSTS_REQ(receiver.getDataFlow(),
+                                                        server.getPort());
         
         Notification notification = new Notification(receiver.getIPaddress(),
                                                      receiver.getDataFlow(),

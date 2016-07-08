@@ -198,6 +198,7 @@ public class Common {
      *          {@code array[0]}.
      */
     public static byte[] intToArray (int port) {
+    
         byte[] portArray = new byte [4];
         
         ByteBuffer aux = ByteBuffer.allocate(portArray.length);
