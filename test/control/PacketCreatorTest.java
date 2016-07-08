@@ -41,10 +41,12 @@ public class PacketCreatorTest {
     public void testNewACK() {
         System.out.println("newACK");
         byte dataFlow = 1;
+        byte [] aux = Common.intToArray(port);
         
-        byte [] expResult = {0, dataFlow, 'A', 'C', 'K'};
+        byte [] expResult = {0, dataFlow, 'A', 'C', 'K',
+                             aux [0], aux[1] , aux[2], aux[3]};
         
-        DatagramPacket result = PacketCreator.ACK(dataFlow);
+        DatagramPacket result = PacketCreator.ACK(dataFlow, port);
         
         assertArrayEquals(expResult, result.getData());
     }
@@ -155,11 +157,13 @@ public class PacketCreatorTest {
     public void testNewCHECK_CON() {
         System.out.println("newCHECK_CON");
         byte dataFlow = 1;
+        byte [] aux = Common.intToArray(port);
         
         byte [] expResult = {0, dataFlow, 'C', 'H', 'E', 'C', 'K', '_',
-                            'C', 'O', 'N'};
+                            'C', 'O', 'N',
+                             aux [0], aux[1], aux[2], aux[3]};
         
-        DatagramPacket result = PacketCreator.CHECK_CON(dataFlow);
+        DatagramPacket result = PacketCreator.CHECK_CON(dataFlow, port);
         
         assertArrayEquals(expResult, result.getData());
     }
@@ -235,17 +239,23 @@ public class PacketCreatorTest {
         byte dataFlow = 1;
         String message = "This is a test message.\n";
         byte[] plaintext = message.getBytes();
+        
         byte[] aux = ControlMessage.PLAIN.toString().getBytes();
+        byte [] auxPort = Common.intToArray(port);
         
         byte [] expResult = new byte [ControlMessage.PLAIN.getLength()
-                                        + plaintext.length];
+                                        + plaintext.length + 4];
         expResult[0] = 0;
         expResult[1] = dataFlow;
         
         System.arraycopy(aux, 0, expResult, 2, aux.length);
-        System.arraycopy(plaintext, 0, expResult, aux.length + 2, plaintext.length);
+        System.arraycopy(auxPort, 0, expResult, 2 + aux.length, auxPort.length);
+        System.arraycopy(plaintext, 0, expResult,
+                         auxPort.length + aux.length + 2, plaintext.length);
         
-        DatagramPacket result = PacketCreator.PLAIN(dataFlow, plaintext);
+        DatagramPacket result = PacketCreator.PLAIN(dataFlow,
+                                                    plaintext,
+                                                    port);
         
         assertArrayEquals(expResult, result.getData());
     }

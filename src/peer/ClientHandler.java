@@ -96,7 +96,9 @@ public class ClientHandler extends Thread {
             conversation (4 tries until giving up) */
             for (Host h : hosts) {
 
-                packet = PacketCreator.PLAIN(dataFlow, message.getBytes());
+                packet = PacketCreator.PLAIN(dataFlow,
+                                             message.getBytes(),
+                                             peer.getServer().getPort());
 
                 expectedAnswer = new Notification(h.getIPaddress(),
                                                  h.getDataFlow(),

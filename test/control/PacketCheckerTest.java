@@ -27,7 +27,7 @@ public class PacketCheckerTest {
         System.out.println("checkACK");
         
         byte dataFlow = 1;
-        byte[] buffer = PacketCreator.ACK(dataFlow).getData();
+        byte[] buffer = PacketCreator.ACK(dataFlow, port).getData();
         
         boolean result = PacketChecker.ACK(buffer);
         
@@ -123,7 +123,7 @@ public class PacketCheckerTest {
         System.out.println("checkCHECK_CON");
         
         byte dataFlow = 1;
-        byte[] buffer = PacketCreator.CHECK_CON(dataFlow).getData();
+        byte[] buffer = PacketCreator.CHECK_CON(dataFlow, port).getData();
         
         boolean result = PacketChecker.CHECK_CON(buffer);
         
@@ -187,7 +187,9 @@ public class PacketCheckerTest {
         String message = "Test message.\nASdf\tg.";
         
         byte dataFlow = 1;
-        byte[] buffer = PacketCreator.PLAIN(dataFlow, message.getBytes()).getData();        
+        byte[] buffer = PacketCreator.PLAIN(dataFlow,
+                                            message.getBytes(),
+                                            port).getData();        
         boolean result = PacketChecker.PLAIN(buffer);
         
         assertTrue(result);

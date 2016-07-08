@@ -216,14 +216,14 @@ public class ServerThread extends Thread {
      *          it hasn't been added (if it was already on the list).
      */
     public boolean addNotification (Notification notification) {
-        
-        /* First of all, cleans the notification list */
-        cleanNotifications();
-        
+                
         if (!notifications.contains(notification)) {
             
             return (notifications.add(notification));
         }
+        
+        /* Cleans the notification list */
+        cleanNotifications();
         
         return false;
     }
@@ -450,7 +450,15 @@ public class ServerThread extends Thread {
             
             Notification notif;
             byte newDF;
-            Host sender = peer.getHostsList().search(dataFlow, packet.getAddress());
+            
+            byte [] aux = new byte [4];
+            System.arraycopy(buffer, ControlMessage.HOSTS_REQ.getLength(),
+                             aux, 0, aux.length);
+            int portAux = Common.arrayToInt(aux);
+            
+            Host sender = peer.getHostsList().search(dataFlow,
+                                                     packet.getAddress(),
+                                                     portAux);
             
             /* Checks if it was one of the messages that the client was waiting
             for */
@@ -524,14 +532,22 @@ public class ServerThread extends Thread {
             DatagramPacket response;
             Host sender;
             
+            byte [] aux = new byte [4];
+            System.arraycopy(buffer, ControlMessage.HOSTS_REQ.getLength(),
+                             aux, 0, aux.length);
+            int portAux = Common.arrayToInt(aux);
+            
             /* Searches the sender host on the list */
             if (
-                (sender = peer.getHostsList().search(dataFlow, packet.getAddress())
-               ) != null) {
+                (sender = peer.getHostsList().search(dataFlow,
+                                                     packet.getAddress(), 
+                                                     portAux)
+                ) != null) {
                 
                 /* Creates a HOSTS_RESP packet and sends it back */
                 response = peer.getHostsList().genHOSTS_RESP(dataFlow);
                 sender.send(response);
+                
             } else {
                 
                  logger.logWarning("HOSTS_REQ message received from an "
@@ -616,21 +632,21 @@ public class ServerThread extends Thread {
             /* Gets the argument on the HELLO message (the port where the sender
             peer will be listening) */
             int args = ControlMessage.HELLO.getLength();
-            byte [] port = {buffer[args],
+            byte [] portArray = {buffer[args],
                             buffer[args + 1],
                             buffer[args + 2],
                             buffer[args + 3]};
             
             /* Creates an object representing the sender host */
             Host sender = new Host(packet.getAddress(), 
-                                   Common.arrayToInt(port),
+                                   Common.arrayToInt(portArray),
                                    dataFlow);
             
             /* Searches the sender host on the list. If the sender wasn't 
             on it, adds it */
             if (peer.getHostsList().search(dataFlow,
                                            packet.getAddress(), 
-                                           Common.arrayToInt(port)
+                                           Common.arrayToInt(portArray)
                 )  == null) {
                 
                 /* Adds the host to the list */
@@ -640,7 +656,7 @@ public class ServerThread extends Thread {
                     Common.connectionObserver.connectionAccepted(dataFlow);
                     
                     /* Creates an ACK packet and sends it back */
-                    response = PacketCreator.ACK(sender.getDataFlow());
+                    response = PacketCreator.ACK(sender.getDataFlow(), port);
                     sender.send(response);
                     
                     logger.logWarning("New host on the room: " 
@@ -649,7 +665,7 @@ public class ServerThread extends Thread {
             } else {
                 
                 /* Sends an ACK packet back */
-                response = PacketCreator.ACK(sender.getDataFlow());
+                response = PacketCreator.ACK(sender.getDataFlow(), port);
                 sender.send(response);
                 
                 logger.logWarning("HELLO message received from an already "
@@ -676,14 +692,21 @@ public class ServerThread extends Thread {
             Host sender;
             String msg;
             
+            byte [] aux = new byte [4];
+            System.arraycopy(buffer, ControlMessage.BYE.getLength(),
+                             aux, 0, aux.length);
+            int portAux = Common.arrayToInt(aux);
+            
             /* Searches the sender host on the list. If the sender was on it, 
             deletes it. If not, doesn't answer back */
             if (
-                (sender = peer.getHostsList().search(dataFlow, packet.getAddress())
+                (sender = peer.getHostsList().search(dataFlow,
+                                                     packet.getAddress(),
+                                                     portAux)
                 ) != null) {
                                 
                 /* Creates an ACK packet and sends it back */
-                response = PacketCreator.ACK(sender.getDataFlow());
+                response = PacketCreator.ACK(sender.getDataFlow(), port);
                 sender.send(response);
                 
                 /* Removes the sender from the known hosts list */
@@ -725,22 +748,29 @@ public class ServerThread extends Thread {
             DatagramPacket response;
             Host sender;
             
+            byte [] aux = new byte [4];
+            System.arraycopy(buffer, ControlMessage.CHECK_CON.getLength(),
+                             aux, 0, aux.length);
+            int portAux = Common.arrayToInt(aux);
+            
             /* Searches the sender on its list. If its not found, returns 
             without sending an answer back */
-            if ((sender = peer.getHostsList().search(dataFlow, packet.getAddress()))
-                    == null) {
+            if ((sender = peer.getHostsList().search(dataFlow,
+                                                     packet.getAddress(),
+                                                     portAux)
+                ) != null) {
+                
+                /* As the sender is known, creates an ACK packet sends it */
+                response = PacketCreator.ACK(sender.getDataFlow(), port);
+                sender.send(response);
+            } else {
                 
                 logger.logWarning("CHECK_CON message received from an unknown "
-                            + "sender:"
-                            + "\nFrom " + packet.getAddress() + ":"
-                            + "\n\tText:" + new String(buffer)
-                            + "\n\tBytes: " + Arrays.toString(buffer) 
-                            + "\n");
-            } else {
-            
-                /* As the sender is known, creates an ACK packet sends it */
-                response = PacketCreator.ACK(sender.getDataFlow());
-                sender.send(response);
+                        + "sender:"
+                        + "\nFrom " + packet.getAddress() + ":"
+                        + "\n\tText:" + new String(buffer)
+                        + "\n\tBytes: " + Arrays.toString(buffer)
+                        + "\n");
             }
         }
         
@@ -762,6 +792,12 @@ public class ServerThread extends Thread {
             DatagramPacket response;
             Host sender;
             Notification expectedAnswer;
+            
+            byte [] aux = new byte [4];
+            System.arraycopy(buffer, ControlMessage.CHNG_DF_REQ.getLength(),
+                             aux, 0, aux.length);
+            int senderPort = Common.arrayToInt(aux);
+            
             byte [] argsAnswer;
             /* Gets the argument on the message (the proposed data flow) */
             int args = ControlMessage.CHNG_DF_REQ.getLength();
@@ -769,8 +805,10 @@ public class ServerThread extends Thread {
             
             /* Searches the sender host on the list */
             if (
-                (sender = peer.getHostsList().search(dataFlow, packet.getAddress())
-               ) != null) {
+                (sender = peer.getHostsList().search(dataFlow,
+                                                     packet.getAddress(),
+                                                     senderPort)
+                ) != null) {
                 
                 /* If the proposed data flow is Common.RESERVED_DATA_FLOW,
                 it means that the sender doesn't care about which port to
@@ -884,6 +922,12 @@ public class ServerThread extends Thread {
             
             DatagramPacket response;
             Host sender;
+            
+            byte [] aux = new byte [4];
+            System.arraycopy(buffer, ControlMessage.CHNG_DF_RESP.getLength(),
+                             aux, 0, aux.length);
+            int senderPort = Common.arrayToInt(aux);
+            
             Notification notification;
             byte [] argsACK;
             /* Gets the argument on the message (the proposed data flow) */
@@ -892,7 +936,9 @@ public class ServerThread extends Thread {
             
             /* Searches the sender host on the list */
             if (
-                (sender = peer.getHostsList().search(dataFlow, packet.getAddress())
+                (sender = peer.getHostsList().search(dataFlow,
+                                                     packet.getAddress(),
+                                                     senderPort)
                ) != null) {
 
                 /* If the request has been accepted, sends an ACK back and 
@@ -901,7 +947,7 @@ public class ServerThread extends Thread {
                     
                     /* No args -> request ACCEPTED.
                        Creates an ACK packet */
-                    response = PacketCreator.ACK(dataFlow);
+                    response = PacketCreator.ACK(dataFlow, port);
                     
                     /* Searches the expected notification and deletes it after
                     getting the arguments (the new data flow id) */
@@ -939,7 +985,7 @@ public class ServerThread extends Thread {
                         
                         /* Changes the host's data flow and sends an 
                         ACK message */
-                        response = PacketCreator.ACK(dataFlow);
+                        response = PacketCreator.ACK(dataFlow, port);
                     
                         /* Searches the expected notification and deletes it
                         after getting the arguments (the new data flow id) */
@@ -1016,9 +1062,15 @@ public class ServerThread extends Thread {
             DatagramPacket response;
             Host sender;
             
-            /* Gets the argument on the PLAIN message (the plain text) */
+            byte [] aux = new byte [4];
+            System.arraycopy(buffer, ControlMessage.PLAIN.getLength(),
+                             aux, 0, aux.length);
+            int portAux = Common.arrayToInt(aux);
+            
+            /* Gets the second argument on the PLAIN message (the plain text), 
+            being aware that the first argument (the port) uses 4 bytes */
             int args = ControlMessage.PLAIN.getLength();
-            byte [] msgAux = new byte [packet.getLength() - args + 2];
+            byte [] msgAux = new byte [packet.getLength() - args + 6];
             
             System.arraycopy(packet.getData(), args, msgAux, 0, msgAux.length);
             /* Appends a carry return to the end of the message */
@@ -1028,24 +1080,25 @@ public class ServerThread extends Thread {
             /* Searches the sender on its list. If its not found, returns 
             without sending an answer back */
             if ((sender = peer.getHostsList().search(dataFlow,
-                                                     packet.getAddress())
-                ) == null) {
-                
-                /* Unknown sender */
-                logger.logWarning("PLAIN message from an unknown source."
-                            + "\nMessage: "
-                            + "\nFrom " + packet.getAddress() + ":"
-                            + "\n\tText:" + new String(buffer)
-                            + "\n\tBytes: " + Arrays.toString(buffer) 
-                            + "\n");
-            } else {
+                                                     packet.getAddress(),
+                                                     portAux)
+                ) != null) {
                 
                 /* Shows the message */
                 logger.logMsg("\t" + new String (msgAux), sender, true);
                 
                 /* As the sender is known, creates an ACK packet sends it */
-                response = PacketCreator.ACK(sender.getDataFlow());
+                response = PacketCreator.ACK(sender.getDataFlow(), port);
                 sender.send(response);
+            } else {
+                
+                /* Unknown sender */
+                logger.logWarning("PLAIN message from an unknown source."
+                        + "\nMessage: "
+                        + "\nFrom " + packet.getAddress() + ":"
+                        + "\n\tText:" + new String(buffer)
+                        + "\n\tBytes: " + Arrays.toString(buffer)
+                        + "\n");
             }
         }
         

@@ -19,6 +19,12 @@ CODE 0 GROUP:
 */
     /**
      * Acknowledges the receipt of the message.
+     * 
+     * <p>
+     * This method has 4 bytes as the first argument: the port where the answer
+     * has to be sent. This bytes start at {@code packet[5]}, being that 
+     * position the highest byte of the integer that represents the port, and
+     * {@code packet[8]} the lowest byte.
      */
     ACK (0, 5),
 
@@ -73,6 +79,12 @@ CODE 0 GROUP:
      * Sends a message requesting a check for the connection. This message
      * should be answered with an ACK one, so the origin host knows that the
      * destination is still up.
+     * 
+     * <p>
+     * This method has 4 bytes as a single argument: the port where the answer
+     * has to be sent. This bytes start at {@code packet[11]}, being that 
+     * position the highest byte of the integer that represents the port, and 
+     * {@code packet[14]} the lowest byte.
      */
     CHECK_CON (0, 11),
     
@@ -139,6 +151,12 @@ CODE 1 GROUP:
 */
     /**
      * Indicates that the following data is plain text.
+     * 
+     * <p>
+     * This method has 4 bytes as the first argument: the port where the answer
+     * has to be sent. This bytes start at {@code packet[7]}, being that 
+     * position the highest byte of the integer that represents the port, and
+     * {@code packet[10]} the lowest byte.
      */
     PLAIN (1, 7);
     

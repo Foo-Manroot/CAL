@@ -95,13 +95,15 @@ public class PacketChecker {
      *          otherwise.
      */
     public static boolean ACK (byte [] buffer)  {
-        /* The packet has the following structure, being 'x' the data flow:
-            Byte: 0  1  2  3  4
-                  0  x  A  C  K
+        /* The packet has the following structure, being 'x' the data flow and 
+          p1, p2... the bytes of the port where the answer is expected (p1 is
+          the highest byte):
+            Byte: 0  1  2  3  4  5  6  7  8
+                  0  x  A  C  K  p1 p2 p3 p4
         
             Also, the packet length must be ACK.length (no more, nor less).
          */
-        return ((buffer.length == ControlMessage.ACK.getLength()) && 
+        return ((buffer.length == ControlMessage.ACK.getLength() + 4) && 
                 (buffer[0] == 0) &&
                 (buffer[2] == 'A') &&
                 (buffer[3] == 'C') &&
@@ -148,7 +150,7 @@ public class PacketChecker {
     public static boolean HOSTS_REQ (byte [] buffer)  {
         /* The packet has the following structure, being 'x' the data flow and 
           p1, p2... the bytes of the port where the answer is expected (p1 is
-          the highest byte)::
+          the highest byte):
             Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 13 14
                   0  x  H  O  S  T  S  _  R  E  Q  p1 p2 p3 p4
         
@@ -271,14 +273,16 @@ public class PacketChecker {
      *          otherwise.
      */
     public static boolean CHECK_CON (byte [] buffer)  {
-        /* The packet has the following structure, being 'x' the data flow:
-            Byte: 0  1  2  3  4  5  6  7  8  9  10
-                  0  x  C  H  E  C  K  _  C  O  N
+        /* The packet has the following structure, being 'x' the data flow and
+            p1, p2... the bytes of the port where the answer is expected (p1 is
+            the highest byte):
+            Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 13 14
+                  0  x  C  H  E  C  K  _  C  O  N  p1 p2 p3 p4
         
                 Also, the packet length must have the proper length
             (no more, nor less).
          */
-        return ((buffer.length == ControlMessage.CHECK_CON.getLength()) && 
+        return ((buffer.length == ControlMessage.CHECK_CON.getLength() + 4) && 
                 (buffer[0] == 0) &&
                 (buffer[2] == 'C') &&
                 (buffer[3] == 'H') &&
@@ -386,14 +390,15 @@ public class PacketChecker {
      *          otherwise.
      */
     public static boolean PLAIN (byte [] buffer)  {
-        /* The packet has the following structure, being 'x' the data flow:
-            Byte: 0  1  2  3  4  5  6  7  ... buffer.length
-                  0  x  P  L  A  I  N  (plaintext message)
-        
+        /* The packet has the following structure, being 'x' the data flow  and
+          p1, p2... the bytes of the port where the answer is expected (p1 is 
+          the highest byte):
+            Byte: 0  1  2  3  4  5  6  7  8  9  10 11  ... buffer.length
+                  0  x  P  L  A  I  N  p1 p1 p3 p4 (plaintext message)
                 Also, the packet length must have the proper length
             (probably more than HOSTS_RESP.length, but no less).
          */
-        return ((buffer.length >= ControlMessage.PLAIN.getLength()) && 
+        return ((buffer.length >= ControlMessage.PLAIN.getLength() + 4) && 
                 (buffer[0] == 0) &&
                 (buffer[2] == 'P') &&
                 (buffer[3] == 'L') &&

@@ -594,7 +594,9 @@ public class Peer {
         conversation (4 tries until giving up) */
         for (Host h : hostsList.search(chatRoom)) {
 
-            packet = PacketCreator.PLAIN(chatRoom, message.getBytes());
+            packet = PacketCreator.PLAIN(chatRoom,
+                                         message.getBytes(),
+                                         server.getPort());
 
             expectedAnswer = new Notification(h.getIPaddress(),
                                               h.getDataFlow(),

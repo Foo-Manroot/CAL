@@ -37,27 +37,35 @@ public class PacketCreator {
      *              The flow of this packet. This byte will be on the second
      *          position of the buffer, after the message code.
      * 
+     * @param port 
+     *              Port that identifies the peer that sent this message.
+     * 
      * 
      * @return 
      *              A completely formed {@link DatagramPacket}.
      */
-    public static DatagramPacket ACK (byte dataFlow) {
+    public static DatagramPacket ACK (byte dataFlow, int port) {
         
         /* Creates a buffer of ACK.length */
-        byte [] buffer = new byte [ControlMessage.ACK.getLength()];
+        byte [] buffer = new byte [ControlMessage.ACK.getLength() + 4];
+        
         byte [] aux = ControlMessage.ACK.toString().getBytes();
+        byte [] portAux = Common.intToArray(port);
+        
         DatagramPacket packet;
         
         /* Fills the data. The packet has the following structure, being 'x' the
-          parameter dataFlow:
-            Byte: 0  1  2  3  4
-                  0  x  A  C  K
+          parameter dataFlow and p1, p2... the bytes of the port where the 
+          answer is expected (p1 is the highest byte):
+            Byte: 0  1  2  3  4  5  6  7  8
+                  0  x  A  C  K  p1 p2 p3 p4
         */
         buffer[0] = 0;
         buffer[1] = dataFlow;
         
         /* Fills the control message */
         System.arraycopy(aux, 0, buffer, 2, aux.length);
+        System.arraycopy(portAux, 0, buffer, aux.length + 2, portAux.length);
         
         packet = new DatagramPacket(buffer, buffer.length);
         
@@ -284,27 +292,35 @@ public class PacketCreator {
      *              The flow of this packet. This byte will be on the second
      *          position of the buffer, after the message code.
      * 
+     * @param port 
+     *              Port where the answer is expected.
+     * 
      * 
      * @return 
      *              A completely formed {@link DatagramPacket}.
      */
-    public static DatagramPacket CHECK_CON (byte dataFlow) {
+    public static DatagramPacket CHECK_CON (byte dataFlow, int port) {
         
         /* Creates a buffer of CHECK_CON.length */
-        byte [] buffer = new byte [ControlMessage.CHECK_CON.getLength()];
+        byte [] buffer = new byte [ControlMessage.CHECK_CON.getLength() + 4];
+       
         byte [] aux = ControlMessage.CHECK_CON.toString().getBytes();
+        byte [] portAux = Common.intToArray(port);
+        
         DatagramPacket packet;
         
         /* Fills the data. The packet has the following structure, being 'x' the
-            parameter dataFlow:
-            Byte: 0  1  2  3  4  5  6  7  8  9  10
-                  0  x  C  H  E  C  K  _  C  O  N
+            parameter dataFlow and p1, p2... the bytes of the port where the 
+            answer is expected (p1 is the highest byte):
+            Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 13 14
+                  0  x  C  H  E  C  K  _  C  O  N  p1 p2 p3 p4
         */
         buffer[0] = 0;
         buffer[1] = dataFlow;
         
         /* Fills the control message */
         System.arraycopy(aux, 0, buffer, 2, aux.length);
+        System.arraycopy(portAux, 0, buffer, aux.length + 2, portAux.length);
         
         packet = new DatagramPacket(buffer, buffer.length);
         
@@ -447,33 +463,40 @@ public class PacketCreator {
      * @param plaintext 
      *              The plaintext message.
      * 
+     * @param port
+     *              Port where the answer is expected.
+     * 
      * 
      * @return 
      *              A completely formed {@link DatagramPacket}.
      */
     public static DatagramPacket PLAIN (byte dataFlow,
-                                           byte [] plaintext) {
+                                        byte [] plaintext,
+                                        int port) {
         
         /* Creates a buffer of CHECK_CON.length */
         byte [] buffer = new byte [ControlMessage.PLAIN.getLength()
-                                   + plaintext.length];
+                                   + 4 + plaintext.length];
         byte [] aux = ControlMessage.PLAIN.toString().getBytes();
+        byte [] portAux = Common.intToArray(port);
+        
         DatagramPacket packet;
         
         /* Fills the data. The packet has the following structure, being 'x' the
-            parameter dataFlow:
-            Byte: 0  1  2  3  4  5  6  7  ... buffer.length
-                  0  x  P  L  A  I  N  (plaintext message)
+            parameter dataFlow and p1, p2... the bytes of the port where the 
+            answer is expected (p1 is the highest byte):
+            Byte: 0  1  2  3  4  5  6  7  8  9  10 11  ... buffer.length
+                  0  x  P  L  A  I  N  p1 p1 p3 p4 (plaintext message)
         */
         buffer[0] = 0;
         buffer[1] = dataFlow;
         
         /* Fills the control message */
         System.arraycopy(aux, 0, buffer, 2, aux.length);
-        
-        /* Copies the information after the header */
-        System.arraycopy(plaintext, 0, buffer, ControlMessage.PLAIN.getLength(),
-                         plaintext.length);
+        System.arraycopy(portAux, 0, buffer, aux.length + 2, portAux.length);
+        /* Copies the data after the header and the argument */
+        System.arraycopy(plaintext, 0, 
+                         buffer, ControlMessage.PLAIN.getLength() + 4, plaintext.length);
         
         
         packet = new DatagramPacket(buffer, buffer.length);

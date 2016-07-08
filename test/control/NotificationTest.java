@@ -35,7 +35,7 @@ public class NotificationTest {
         
         instance = new Notification(sourceIP, sourceDataFlow, message);
         
-        correctPacket = PacketCreator.ACK(sourceDataFlow);
+        correctPacket = PacketCreator.ACK(sourceDataFlow, 1234);
         correctPacket.setAddress(sourceIP);
         
         wrongPacket = PacketCreator.NACK(sourceDataFlow);

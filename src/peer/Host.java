@@ -333,7 +333,8 @@ public class Host implements Serializable {
      */
     public boolean checkConnection (Peer origin) {
         
-        DatagramPacket packet = PacketCreator.CHECK_CON (dataFlow);
+        DatagramPacket packet = PacketCreator.CHECK_CON (dataFlow, 
+                                                         origin.getServer().getPort());
         Notification notif = new Notification(IPaddress,
                                               dataFlow,
                                               ControlMessage.ACK);

@@ -42,7 +42,7 @@ public class Notification {
      * Expected value of the arguments, if any.
      */
     private final byte [] expectedArgs;
-    
+        
 /* --------------------------------------- */
 /* ---- END OF ATTRIBUTES DECLARATION ---- */
 /* --------------------------------------- */
