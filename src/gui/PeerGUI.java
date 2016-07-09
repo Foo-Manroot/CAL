@@ -13,10 +13,6 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -50,7 +46,7 @@ public class PeerGUI extends Application {
     
     @Override
     public void start(Stage stage) throws Exception {
-//        int i = 0;
+        
         PeerGUI.stage = stage;
         PeerGUI.peer = new Peer();
         
@@ -61,35 +57,6 @@ public class PeerGUI extends Application {
         stage.setTitle("Peer listening on port " + peer.getServer().getPort());
         
         stage.show();
-//        TextFlow textFlow = new TextFlow();
-//        
-//        ScrollPane scroll = new ScrollPane(textFlow);
-//        
-//        scroll.setPrefSize(300, 200);  
-//        scroll.setFitToWidth(true);
-//        
-//        stage.setScene(new Scene (scroll));
-//        stage.show();
-//        HashSet <String> colours = new HashSet<>();
-//        
-//        for (i = 0; i < 1000; i++) {
-//            
-//            Color colour = common.Logger.chooseColour();
-//
-//            Text text = new Text(colour.toString() + "\t");
-//            text.setFill(colour);
-//            
-//            if (colours.contains(colour.toString())) {
-//                
-//                System.out.println("Repeated colour: " + colour.toString());
-//            }
-//            
-//            colours.add(colour.toString());
-//            
-//            textFlow.getChildren().add(text);
-//        }
-//        
-//        System.out.println("Total repeated colours: " + (i - colours.size()));
     }
     
     /**
@@ -112,7 +79,7 @@ public class PeerGUI extends Application {
             stage.setScene(scene);
             
             /* Adds the text areas to the logger. The text areas are inside a 
-            titled pane that's inside a scroll pane */
+            scroll pane that's inside a titled pane */
             for (Node n : root.getChildrenUnmodifiable()) {
                 
                 if (n.getId() == null) {
@@ -122,24 +89,24 @@ public class PeerGUI extends Application {
                 
                 switch (n.getId()) {
                     
-                    case "warningScrollPane":
-                        scroll = (ScrollPane) n;
+                    case "warningsTitledPane":
+                        titled = (TitledPane) n;
                         
                         /* Its content is the titled pane */
-                        titled = (TitledPane) scroll.getContent();
+                        scroll = (ScrollPane) titled.getContent();
                         
                         /* The child of the titled pane is the text flow */
-                        logger.addTextArea((TextFlow) titled.getContent(), 5);
+                        logger.addTextArea((TextFlow) scroll.getContent(), 5);
                         break;
                         
-                    case "errorsScrollPane":
-                        scroll = (ScrollPane) n;
+                    case "errorsTitledPane":
+                        titled = (TitledPane) n;
                         
                         /* Its content is the titled pane */
-                        titled = (TitledPane) scroll.getContent();
+                        scroll = (ScrollPane) titled.getContent();
                         
                         /* The child of the titled pane is the text flow */
-                        logger.addTextArea((TextFlow) titled.getContent(), 3);
+                        logger.addTextArea((TextFlow) scroll.getContent(), 3);
                         break;
                 }
             }

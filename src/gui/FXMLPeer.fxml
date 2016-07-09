@@ -36,23 +36,23 @@
           </Menu>
         </menus>
       </MenuBar>
-      <ScrollPane fx:id="warningScrollPane" layoutX="632.0" layoutY="42.0" prefHeight="217.0" prefViewportHeight="215.0" prefViewportWidth="508.0" prefWidth="510.0">
+      <TitledPane fx:id="warningsTitledPane" animated="false" layoutX="632.0" layoutY="42.0" prefHeight="215.0" prefWidth="508.0" text="%warnings_pane_title">
          <content>
-            <TitledPane animated="false" layoutX="639.0" layoutY="42.0" prefHeight="215.0" prefWidth="508.0" text="%warnings_pane_title">
+            <ScrollPane prefViewportHeight="189.0" prefViewportWidth="506.0">
                <content>
                   <TextFlow prefHeight="200.0" prefWidth="200.0" />
                </content>
-            </TitledPane>
+            </ScrollPane>
          </content>
-      </ScrollPane>
-      <ScrollPane fx:id="errorsScrollPane" layoutX="632.0" layoutY="259.0" prefHeight="217.0" prefViewportHeight="215.0" prefViewportWidth="508.0" prefWidth="510.0">
+      </TitledPane>
+      <TitledPane fx:id="errorsTitledPane" animated="false" layoutX="632.0" layoutY="259.0" prefHeight="215.0" prefWidth="508.0" text="%errors_pane_title">
          <content>
-            <TitledPane animated="false" layoutX="639.0" layoutY="42.0" prefHeight="215.0" prefWidth="508.0" text="%errors_pane_title">
+            <ScrollPane prefViewportHeight="189.0" prefViewportWidth="506.0">
                <content>
                   <TextFlow prefHeight="200.0" prefWidth="200.0" />
                </content>
-            </TitledPane>
+            </ScrollPane>
          </content>
-      </ScrollPane>
+      </TitledPane>
    </children>
 </Pane>
