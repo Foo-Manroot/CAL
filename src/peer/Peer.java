@@ -202,6 +202,9 @@ public class Peer {
             hostsList.add(host);
         }
         
+        /* Removes the notification from the list */
+        server.removeNotification(notif);
+        
         /* Asks this new peer for a list of another peers on the rooms and 
         adds them to the list, too */
         packet = PacketCreator.HOSTS_REQ(chatRoom, server.getPort());
@@ -212,6 +215,9 @@ public class Peer {
         retVal = (retVal)? 
                     host.send(packet, notif, this, 1) 
                   : false;
+        
+        /* Removes the notification from the list */
+        server.removeNotification(notif);
         
         return retVal;
     }
@@ -251,6 +257,9 @@ public class Peer {
                         retVal :
                         false;
             
+            /* Removes the notification from the list */
+            server.removeNotification(waitedResponse);
+            
             /* Removes the host form the list */
             hostsList.remove(h);
         }
@@ -285,6 +294,7 @@ public class Peer {
      */
     public boolean startConversation (Host host) {
         
+        boolean retVal;
         byte proposedFlow = findFreeDataFlow();
         
         if (proposedFlow == Common.RESERVED_DATA_FLOW) {
@@ -303,7 +313,12 @@ public class Peer {
                                                        ControlMessage.CHNG_DF_RESP,
                                                        new byte []{proposedFlow});
         
-        return host.send(packet, expectedAnswer, this, 4);
+        retVal = host.send(packet, expectedAnswer, this, 4);
+        
+        /* Removes the notification from the list */
+        server.removeNotification(expectedAnswer);
+        
+        return retVal;
     }
     
     /**
@@ -340,9 +355,11 @@ public class Peer {
         /* Removes the host form the list */
         hostsList.remove(host);
         
-        /* Searches for the client that was controlling that data flow and 
-        stops it */
+        /* Removes the notification from the list */
+        server.removeNotification(waitedResponse);
         
+        /* Searches for the client that was controlling that data flow and 
+        stops it */        
         for (ClientHandler c : clients) {
             
             if (c.getDataFlow() == host.getDataFlow()) {
@@ -370,6 +387,7 @@ public class Peer {
      */
     public boolean updateHosts (Host receiver) {
          
+        boolean retVal;
         DatagramPacket packet = PacketCreator.HOSTS_REQ(receiver.getDataFlow(),
                                                         server.getPort());
         
@@ -377,7 +395,12 @@ public class Peer {
                                                      receiver.getDataFlow(),
                                                      ControlMessage.HOSTS_RESP);
                 
-        return (receiver.send(packet, notification, this, 1));
+        retVal = receiver.send(packet, notification, this, 1);
+        
+        /* Removes the notification from the list */
+        server.removeNotification(notification);
+        
+        return retVal;
     }
     
     /**
@@ -625,6 +648,9 @@ public class Peer {
                                 "\n" + h.toString());
                 failures.add(h);
             }
+            
+            /* Removes the notification from the list */
+            server.removeNotification(expectedAnswer);
         }
         
         return failures;

@@ -23,7 +23,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TitledPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
@@ -306,7 +305,7 @@ public class FXMLPeerController implements Initializable {
             );
             
             PeerGUI.stage.getScene().setRoot(root);
-        
+                    
         } catch (IOException ex) {
             
             Logger.getLogger(PeerGUI.class.getName()).log(Level.SEVERE, null, ex);

@@ -229,6 +229,18 @@ public class ServerThread extends Thread {
         return false;
     }
     
+    
+    /**
+     * Removes the given notification from the list.
+     * 
+     * @param notification 
+     *              The notification to be removed (if it's on the list).
+     */
+    public void removeNotification (Notification notification) {
+        
+        notifications.remove(notification);
+    }
+    
     /**
      * Searches the given {@link DatagramPacket} on the list of 
      * {@link Notification} and returns it if it was a message for which

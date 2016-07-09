@@ -110,6 +110,9 @@ public class ClientHandler extends Thread {
                                     message + "\" to:" + 
                                     "\n" + h.toString());
                 }
+                
+                /* Removes the notification from the list */
+                peer.getServer().removeNotification(expectedAnswer);
             }
         }
     }
