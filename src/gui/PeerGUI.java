@@ -13,6 +13,8 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
+import javafx.beans.Observable;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -66,6 +68,7 @@ public class PeerGUI extends Application {
         
         ScrollPane scroll;
         TitledPane titled;
+        TextFlow text;
         
         try {
             
@@ -96,7 +99,22 @@ public class PeerGUI extends Application {
                         scroll = (ScrollPane) titled.getContent();
                         
                         /* The child of the titled pane is the text flow */
-                        logger.addTextArea((TextFlow) scroll.getContent(), 5);
+                        text = (TextFlow) scroll.getContent();
+                        
+                        /* Adds a listener so the scroll bar can go to the 
+                        bottom automatically */
+                        text.heightProperty().addListener( observable -> {
+
+                            TitledPane auxTitled = (TitledPane) n;
+                            ScrollPane auxScroll = (ScrollPane) auxTitled.getContent();
+                            
+                            auxTitled.layout();
+                            
+                            auxScroll.setVvalue(auxScroll.getVmax());
+
+                        });
+                        
+                        logger.addTextArea(text, 5);
                         break;
                         
                     case "errorsTitledPane":
@@ -106,7 +124,22 @@ public class PeerGUI extends Application {
                         scroll = (ScrollPane) titled.getContent();
                         
                         /* The child of the titled pane is the text flow */
-                        logger.addTextArea((TextFlow) scroll.getContent(), 3);
+                        text = (TextFlow) scroll.getContent();
+                        
+                        /* Adds a listener so the scroll bar can go to the 
+                        bottom automatically */
+                        text.heightProperty().addListener( observable -> {
+
+                            TitledPane auxTitled = (TitledPane) n;
+                            ScrollPane auxScroll = (ScrollPane) auxTitled.getContent();
+                            
+                            auxTitled.layout();
+                            
+                            auxScroll.setVvalue(auxScroll.getVmax());
+
+                        });
+                        
+                        logger.addTextArea(text, 3);
                         break;
                 }
             }

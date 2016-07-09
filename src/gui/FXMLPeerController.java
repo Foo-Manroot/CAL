@@ -23,6 +23,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TitledPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
@@ -226,7 +227,7 @@ public class FXMLPeerController implements Initializable {
         /* Disconnect button */
         Button disconnectButton = new Button();
         disconnectButton.setText(resourceBundle.getString("button_disconnect"));
-        
+        /* Action for the disconnection button */
         disconnectButton.setOnAction(e -> {
             
             e.consume();
@@ -247,6 +248,14 @@ public class FXMLPeerController implements Initializable {
         msgScroll.setPrefSize(msgTextArea.getPrefWidth(),
                               msgTextArea.getPrefHeight());
         msgScroll.setFitToWidth(true);
+        
+         /* Adds a listener so the scroll bar can go to the 
+        bottom automatically */
+        msgTextArea.heightProperty().addListener( observable -> {
+            
+            pane.layout();
+            msgScroll.setVvalue(msgScroll.getVmax());
+        });
         
         optionsPane.setAlignment(Pos.BASELINE_RIGHT);
         optionsPane.getChildren().addAll(disconnectButton, sendButton);
