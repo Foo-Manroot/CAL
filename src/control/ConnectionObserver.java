@@ -43,6 +43,7 @@ public class ConnectionObserver {
             
             /* Notifies the controller so it can add a new tab when possible */
             Platform.runLater(() -> {
+                
                 aux.addTab(dataFlow);
             });
         }

@@ -199,7 +199,6 @@ public class PacketCreatorTest {
         System.out.println("newCHNG_DF_RESP - Rejected proposal");
        
         byte proposedFlow = 2;
-        byte accepted = 0;
         byte dataFlow = 1;
         byte [] aux = Common.intToArray(port);
         
@@ -209,20 +208,20 @@ public class PacketCreatorTest {
                              proposedFlow};
         
         DatagramPacket result = PacketCreator.CHNG_DF_RESP(dataFlow,
-                                                           accepted,
+                                                           false,
                                                            proposedFlow,
                                                            port);
         
         assertArrayEquals(expResult, result.getData());
         
         System.out.println("newCHNG_DF_RESP - Accepted proposal");
-        accepted = 1;
+        
         expResult = new byte [] {0, dataFlow, 'C', 'H', 'N', 'G', '_',
                                 'D', 'F', '_', 'R', 'E', 'S', 'P',
                                 aux [0], aux[1], aux[2], aux[3]};
         
         result = PacketCreator.CHNG_DF_RESP(dataFlow,
-                                            accepted,
+                                            true,
                                             proposedFlow,
                                             port);
         

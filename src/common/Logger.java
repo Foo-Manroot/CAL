@@ -331,64 +331,73 @@ public class Logger {
                                             textAreaID.length()));
                 
                 if (host.getDataFlow() == dataFlowAux) {
-                    
-                    /* Notifies the GUI thread to add the text */
-                    Platform.runLater(() -> {
-                        
-                        Color colour;
-                        /* Adds a context menu so a new connection can be 
-                        done with the selected host */
-                        MenuItem connectMenu = new MenuItem(
-                                ResourceBundle.getBundle(Common.resourceBundle)
-                                        .getString("private_conv_menu")
-                                );
-                        
-                        connectMenu.setOnAction(e -> {
-                            
-                            Alert alert = new Alert (Alert.AlertType.ERROR);
-                            String text = ResourceBundle
-                                            .getBundle(Common.resourceBundle)
-                                            .getString("error_private_conv");
-                            
-                            /* Starts a new conversation */
-                            if (!PeerGUI.peer.startConversation(host)) {
-                                
-                                logError(text);
-                                alert.setContentText(text);
-                                alert.show();
-                            }
-                        });
-                        
-                        ContextMenu context = new ContextMenu(connectMenu);
-                        Text text;
-                        
-                        /* Searches the host on the list to get its colour. If
-                        it wasn't there, adds it. */
-                        if (!hostsColours.containsKey(host)) {
-
-                            colour = addHost(host);
-                        } else {
-
-                            colour = hostsColours.get(host);
-                        }
-                        
-                        text = new Text(msg);
-                        
-                        text.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
-                            
-                            if (e.getButton() == MouseButton.SECONDARY) {
-                                
-                                context.show(text, e.getScreenX(), e.getScreenY());
-                            }
-                        });
-                        
-                        text.setFill(colour);
-                        
-                        outArea.getChildren().add(text);
-                    });
+                 
+                    addText(outArea, host, msg);
                 }
             }
         }
+    }
+    
+    /**
+     * Adds the text to the given TextFlow. Also, adds the necessary items, like
+     * the context menu.
+     */
+    private void addText (TextFlow outArea, Host host, String msg) {
+        
+        /* Notifies the GUI thread to add the text */
+        Platform.runLater(() -> {
+
+            Color colour;
+            /* Adds a context menu so a new connection can be 
+            done with the selected host */
+            MenuItem connectMenu = new MenuItem(
+                    ResourceBundle.getBundle(Common.resourceBundle)
+                            .getString("private_conv_menu")
+                    );
+
+            connectMenu.setOnAction(e -> {
+
+                Alert alert = new Alert (Alert.AlertType.ERROR);
+                String text = ResourceBundle
+                                .getBundle(Common.resourceBundle)
+                                .getString("error_private_conv");
+
+                /* Starts a new conversation */
+                if (!PeerGUI.peer.startConversation(host)) {
+
+                    logError(text);
+                    alert.setContentText(text);
+                    alert.show();
+                }
+            });
+
+            ContextMenu context = new ContextMenu(connectMenu);
+            Text text;
+
+            /* Searches the host on the list to get its colour. If
+            it wasn't there, adds it. */
+            if (!hostsColours.containsKey(host)) {
+
+                colour = addHost(host);
+            } else {
+
+                colour = hostsColours.get(host);
+            }
+
+            text = new Text(msg);
+
+            text.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+
+                if (e.getButton() == MouseButton.SECONDARY) {
+
+                    context.show(text, e.getScreenX(), e.getScreenY());
+                }
+            });
+
+            text.setFill(colour);
+
+            outArea.getChildren().add(text);
+        });
     }
     
     /**

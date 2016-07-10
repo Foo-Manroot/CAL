@@ -821,8 +821,10 @@ public class ServerThread extends Thread {
             int senderPort = Common.arrayToInt(aux);
             
             byte [] argsAnswer;
-            /* Gets the argument on the message (the proposed data flow) */
-            int args = ControlMessage.CHNG_DF_REQ.getLength();
+            /* Gets the second argument on the message (the proposed data
+            flow). 4 extra bytes must be added to get this argument because the
+            first one is the port number */
+            int args = ControlMessage.CHNG_DF_REQ.getLength() + 4;
             byte proposedDF = buffer[args];
             
             /* Searches the sender host on the list */
@@ -858,7 +860,7 @@ public class ServerThread extends Thread {
                                                       argsAnswer);
 
                     response = PacketCreator.CHNG_DF_RESP(dataFlow, 
-                                                          (byte) 1,
+                                                          false,
                                                           proposedDF,
                                                           port);
                     
@@ -885,9 +887,9 @@ public class ServerThread extends Thread {
                                                       argsAnswer);
 
                     response = PacketCreator.CHNG_DF_RESP(dataFlow, 
-                                                          (byte) 1,
+                                                          true,
                                                           proposedDF,
-                                                          port);
+                                                          port);                    
                 } else {
                     
                     /* REJECTS THE PROPOSED ID.
@@ -912,7 +914,7 @@ public class ServerThread extends Thread {
                                                       argsAnswer);
                     
                     response = PacketCreator.CHNG_DF_RESP(dataFlow, 
-                                                          (byte) 1,
+                                                          false,
                                                           proposedDF,
                                                           port);
                 }
@@ -923,11 +925,11 @@ public class ServerThread extends Thread {
             } else {
                 
                  logger.logWarning("CHNG_DF_REQ message received from an "
-                            + "unknown sender:"
-                            + "\nFrom " + packet.getAddress() + ":"
-                            + "\n\tText:" + new String(buffer)
-                            + "\n\tBytes: " + Arrays.toString(buffer) 
-                            + "\n");
+                                    + "unknown sender:"
+                                    + "\nFrom " + packet.getAddress() + ":"
+                                    + "\n\tText:" + new String(buffer)
+                                    + "\n\tBytes: " + Arrays.toString(buffer) 
+                                    + "\n");
             }        
         }
         
@@ -952,8 +954,10 @@ public class ServerThread extends Thread {
             
             Notification notification;
             byte [] argsACK;
-            /* Gets the argument on the message (the proposed data flow) */
-            int args = ControlMessage.CHNG_DF_RESP.getLength();
+            /* Gets the second argument on the message (the proposed data
+            flow). 4 extra bytes must be added to get this argument because the
+            first one is the port number */
+            int args = ControlMessage.CHNG_DF_RESP.getLength() + 4;
             byte proposedDF;
             
             /* Searches the sender host on the list */
@@ -1049,7 +1053,7 @@ public class ServerThread extends Thread {
                                                          argsACK);
 
                         response = PacketCreator.CHNG_DF_RESP(dataFlow,
-                                                              proposedDF,
+                                                              false,
                                                               proposedDF,
                                                               port);
 

@@ -156,9 +156,8 @@ public class PacketCheckerTest {
         System.out.println("checkCHNG_DF_RESP");
         
         byte dataFlow = 1;
-        byte accepted = 1;
         byte[] buffer = PacketCreator.CHNG_DF_RESP(dataFlow,
-                                                   accepted,
+                                                   true,
                                                    dataFlow,
                                                    port).getData();
         
@@ -166,9 +165,8 @@ public class PacketCheckerTest {
         
         assertTrue(result);
         
-        accepted = 0;
         buffer = PacketCreator.CHNG_DF_RESP(dataFlow,
-                                            accepted,
+                                            false,
                                             dataFlow,
                                             port).getData();
         

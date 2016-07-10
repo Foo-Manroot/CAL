@@ -390,8 +390,8 @@ public class PacketCreator {
      * 
      * @param accepted
      *              This parameter determines whether the parameter 
-     *          {@code propsedFlow} should be used (if {@code accepted == 1}) 
-     *          to form the packet or not (if {@code accepted == 0}).
+     *          {@code propsedFlow} should be used (if {@code accepted == true}) 
+     *          to form the packet or not (if {@code accepted == false}).
      * 
      * @param proposedFlow 
      *              The new data flow proposed to the destination peer. If the 
@@ -406,15 +406,15 @@ public class PacketCreator {
      *              A completely formed {@link DatagramPacket}.
      */
     public static DatagramPacket CHNG_DF_RESP (byte dataFlow,
-                                               byte accepted,
+                                               boolean accepted,
                                                byte proposedFlow,
                                                int port) {
         
         /* If the proposal was rejected, the buffer must have an extra Byte to 
         store the second argument. */
-        int packet_size = (accepted == 0)? 
-                            ControlMessage.CHNG_DF_RESP.getLength() + 5:
-                            ControlMessage.CHNG_DF_RESP.getLength() + 4;
+        int packet_size = (accepted)? 
+                            ControlMessage.CHNG_DF_RESP.getLength() + 4:
+                            ControlMessage.CHNG_DF_RESP.getLength() + 5;
         
         /* Creates a buffer of the needed length */
         byte [] buffer = new byte [packet_size];
@@ -439,7 +439,7 @@ public class PacketCreator {
         System.arraycopy(portAux, 0, buffer, aux.length + 2, portAux.length);
         
         /* Adds the required arguments */        
-        if (accepted == 0) {
+        if (!accepted) {
             
             buffer [packet_size - 1] = proposedFlow;
         }

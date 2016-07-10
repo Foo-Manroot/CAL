@@ -593,17 +593,20 @@ public class Peer {
         byte oldDataFlow = host.getDataFlow();
         Host aux;
         
-        if ((aux = hostsList.search(oldDataFlow,
-                                    host.getIPaddress(),
-                                    host.getPort())
+        if (hostsList.search(oldDataFlow,
+                             host.getIPaddress(),
+                             host.getPort()
             ) == null) {
             
             return;
         }
         
         /* Changes the data flow on the peer and adds it to the list */
-        aux.setDataFlow(newDataFlow);
+        aux = new Host(host.getIPaddress(), host.getPort(), newDataFlow);
         hostsList.add(aux);
+        
+        /* Notifies the observer */
+        Common.connectionObserver.connectionAccepted(newDataFlow);
     }
 
     
