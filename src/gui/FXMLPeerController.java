@@ -13,13 +13,17 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
@@ -139,7 +143,7 @@ public class FXMLPeerController implements Initializable {
         
         /* Creates a new tab right beside the '+' tab */
         int newTabPos = roomsTabPane.getTabs().indexOf(addTab);
-        Tab newTab = new Tab("Tab" + newTabPos); 
+        Tab newTab = new Tab("Tab" + newTabPos);
         newTab.setId("chatRoom" + chatRoomID);
         
         /* Sets a handler for a closure request */
@@ -296,6 +300,11 @@ public class FXMLPeerController implements Initializable {
      */
     private void changeLanguage (Locale locale) {
         
+        /* Stores the open tabs and the selected tab */
+        ObservableList<Tab> openTabs = roomsTabPane.getTabs();
+        int selectedIndex = roomsTabPane.getSelectionModel().getSelectedIndex();
+        TabPane aux;
+        
         try {
             
             /* Loads the scene with the new language */
@@ -305,6 +314,28 @@ public class FXMLPeerController implements Initializable {
             );
             
             PeerGUI.stage.getScene().setRoot(root);
+            
+            for (Node n : root.getChildrenUnmodifiable()) {
+                
+                if ((n.getId() != null) && (n.getId().equals("roomsTabPane"))) {
+
+                    aux = (TabPane) n;
+                    
+                    /* Restores the open tabs */
+                    for (Tab t : openTabs) {
+                    
+                        /* Only adds the conversation tabs (the only tabs that 
+                        aren't closable are the initial and the '+' ones) */
+                        if (t.isClosable()) {
+                            
+                            aux.getTabs().add(aux.getTabs().size() - 1, t);
+                        }
+                    }
+                    
+                    /* Sets the previously selected tab */
+                    aux.getSelectionModel().select(selectedIndex);
+                }
+            }
                     
         } catch (IOException ex) {
             
