@@ -310,7 +310,7 @@ public class HostsList implements Serializable {
                 if (localPeer != null &&
                     auxHost.getPort() != localPeer.getServer().getPort() &&
                     !auxHost.getIPaddress().equals(
-                            localPeer.getServer().getSocket().getInetAddress())
+                            localPeer.getServer().getSocket().getLocalAddress())
                     ) {
                     
                     /* If the host was correctly created, searches it and

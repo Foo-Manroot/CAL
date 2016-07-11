@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Date;
+import java.util.Enumeration;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -16,6 +18,7 @@ import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -80,6 +83,15 @@ public class Logger {
      */
     private static Logger instance;
     
+    /**
+     * List of all the known hosts and their aliases (only one per host).
+     * 
+     * <pre>
+     * Key ->  Host
+     * Value -> String with the alias
+     * </pre>
+     */
+    private final ConcurrentHashMap<Host, String> hostsAlias;
     
     /**
      * List of all the known hosts and their identifier colours.
@@ -98,7 +110,7 @@ public class Logger {
      * Last host that sent a message.
      */
     private Host lastSender = null;
-    
+        
 /* -------------------------------------- */
 /* ---- END OF ATTRIBUTE DECLARATION ---- */
 /* -------------------------------------- */
@@ -124,6 +136,7 @@ public class Logger {
         filesWARNING = new ConcurrentLinkedQueue<>();
         
         hostsColours = new ConcurrentHashMap<>();
+        hostsAlias = new ConcurrentHashMap<>();
         
         /* Adds STDOUT and STDERR */
         streamsERROR.add(new DataOutputStream(System.err));
@@ -169,6 +182,164 @@ public class Logger {
         
         return new Color(r, g, b, 1);
     }
+    
+    /**
+     * Sets the name that the given host will have through the rest of the 
+     * conversation.
+     * 
+     * @param host 
+     *              The host that's going to have that alias.
+     * 
+     * @param alias
+     *              The new name for this host.
+     */
+    public void setAlias (Host host, String alias) {
+        
+        hostsAlias.put(host, alias);
+    }
+    
+    /**
+     * Returns a string that represent the given host. If it was on the aliases
+     * list, returns it. If not, returns a string with just the IP address and 
+     * the port number of this host.
+     * 
+     * 
+     * @param host 
+     *              The host whose name is wanted.
+     * 
+     * 
+     * @return 
+     *              A string with the name that represents that host.
+     */
+    public String getName (Host host) {
+               
+        Host hAux;
+        Enumeration aux = hostsAlias.keys();
+        
+        /* Searches another host with the same IP address, port number and
+        data flow ID */
+        while (aux.hasMoreElements()) {
+         
+            hAux = (Host) aux.nextElement();
+            
+            if (hAux.getDataFlow() == host.getDataFlow() &&
+                hAux.getIPaddress().equals(host.getIPaddress()) &&
+                hAux.getPort() == host.getPort()) {
+                
+                return (hostsAlias.get(hAux));
+            }
+            
+        }
+        
+        /* If the host was on the list, returns its name. If not, returns a 
+        string with the IP and the port number */
+        return (host.getIPaddress() + ":" + host.getPort());
+    }
+    
+    /**
+     * Generates and adds the text to the given TextFlow. Also, adds the 
+     * necessary items, like a context menu.
+     */
+    private void genText (TextFlow outArea, Host host, String msg) {
+        
+        /* Notifies the GUI thread to add the text */
+        Platform.runLater(() -> {
+
+            Color colour = Color.BLACK;
+            boolean found = false;
+            Host hAux;
+            Enumeration aux = hostsColours.keys();
+        
+            /* Adds a context menu so a new connection can be 
+            done with the selected host */
+            MenuItem connectMenu = new MenuItem(
+                    ResourceBundle.getBundle(Common.resourceBundle)
+                            .getString("private_conv_menu")
+                    );
+
+            connectMenu.setOnAction(e -> {
+
+                Alert alert = new Alert (Alert.AlertType.ERROR);
+                String text = ResourceBundle
+                                .getBundle(Common.resourceBundle)
+                                .getString("error_private_conv");
+
+                /* Starts a new conversation */
+                if (!PeerGUI.peer.startConversation(host)) {
+
+                    logError(text);
+                    alert.setContentText(text);
+                    alert.show();
+                }
+            });
+            
+            /* Adds another menu item to set the host alias */
+            MenuItem aliasMenu = new MenuItem(
+                    ResourceBundle.getBundle(Common.resourceBundle)
+                            .getString("chng_alias_menu")
+                    );
+
+            aliasMenu.setOnAction(e -> {
+
+                Optional answer;
+                TextInputDialog dialog = new TextInputDialog();
+                String text = ResourceBundle
+                                .getBundle(Common.resourceBundle)
+                                .getString("chng_alias_menu");
+
+                dialog.setContentText(text);
+                
+                answer = dialog.showAndWait();
+                
+                /* Gets the new value and adds it to the list (only if any 
+                value has been submitted) */
+                if (answer.isPresent() && !((String) answer.get()).isEmpty()) {
+                    
+                    hostsAlias.put(host, (String) answer.get());
+                }
+            });
+            
+            ContextMenu context = (Common.isLocalPeer(host))? 
+                                        new ContextMenu(aliasMenu) 
+                                      : new ContextMenu(aliasMenu, connectMenu);
+            Text text;
+
+            /* Searches the host on the list to get its colour. If
+            it wasn't there, adds it. */
+            while (aux.hasMoreElements() && !found) {
+
+                hAux = (Host) aux.nextElement();
+
+                if (hAux.getDataFlow() == host.getDataFlow() &&
+                    hAux.getIPaddress().equals(host.getIPaddress()) &&
+                    hAux.getPort() == host.getPort()) {
+
+                    colour = hostsColours.get(hAux);
+                    found = true;
+                }
+            }
+        
+            if (!found) {
+
+                colour = addHost(host);
+            } 
+
+            text = new Text(msg);
+
+            text.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+
+                if (e.getButton() == MouseButton.SECONDARY) {
+
+                    context.show(text, e.getScreenX(), e.getScreenY());
+                }
+            });
+
+            text.setFill(colour);
+
+            outArea.getChildren().add(text);
+        });
+    }
+    
     
 /* ------------------------- */
 /* ---- LOGGING METHODS ---- */
@@ -275,7 +446,7 @@ public class Logger {
                 msg = message;
             } else {
                 
-                msg = host.getIPaddress() + ":" + host.getPort() 
+                msg = getName(host)
                       + "\n\t" + message;
                 
                 /* Updates the last sender */
@@ -332,72 +503,10 @@ public class Logger {
                 
                 if (host.getDataFlow() == dataFlowAux) {
                  
-                    addText(outArea, host, msg);
+                    genText(outArea, host, msg);
                 }
             }
         }
-    }
-    
-    /**
-     * Adds the text to the given TextFlow. Also, adds the necessary items, like
-     * the context menu.
-     */
-    private void addText (TextFlow outArea, Host host, String msg) {
-        
-        /* Notifies the GUI thread to add the text */
-        Platform.runLater(() -> {
-
-            Color colour;
-            /* Adds a context menu so a new connection can be 
-            done with the selected host */
-            MenuItem connectMenu = new MenuItem(
-                    ResourceBundle.getBundle(Common.resourceBundle)
-                            .getString("private_conv_menu")
-                    );
-
-            connectMenu.setOnAction(e -> {
-
-                Alert alert = new Alert (Alert.AlertType.ERROR);
-                String text = ResourceBundle
-                                .getBundle(Common.resourceBundle)
-                                .getString("error_private_conv");
-
-                /* Starts a new conversation */
-                if (!PeerGUI.peer.startConversation(host)) {
-
-                    logError(text);
-                    alert.setContentText(text);
-                    alert.show();
-                }
-            });
-
-            ContextMenu context = new ContextMenu(connectMenu);
-            Text text;
-
-            /* Searches the host on the list to get its colour. If
-            it wasn't there, adds it. */
-            if (!hostsColours.containsKey(host)) {
-
-                colour = addHost(host);
-            } else {
-
-                colour = hostsColours.get(host);
-            }
-
-            text = new Text(msg);
-
-            text.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
-
-                if (e.getButton() == MouseButton.SECONDARY) {
-
-                    context.show(text, e.getScreenX(), e.getScreenY());
-                }
-            });
-
-            text.setFill(colour);
-
-            outArea.getChildren().add(text);
-        });
     }
     
     /**
@@ -665,11 +774,11 @@ public class Logger {
     }
     
     /**
-     * Adds the given JTextArea on the proper lists, depending on the parameter
+     * Adds the given TextArea on the proper lists, depending on the parameter
      * {@code group}.
      * 
      * @param textArea  
-     *              JTextArea to be added.
+     *              TextArea to be added.
      * 
      * @param group 
      *              This code determines the list (or lists) where the stream 

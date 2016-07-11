@@ -2,20 +2,22 @@ package common;
 
 import control.ConnectionObserver;
 import control.ControlMessage;
+import gui.PeerGUI;
 import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.Inet6Address;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import peer.Host;
 
 /**
  * Default parameters for the message interchange and other common static
@@ -237,7 +239,28 @@ public class Common {
 
         return port;
     }
-
+    
+    /**
+     * Checks whether the given host is the same as the local peer (the static
+     * attribute {@code peer} on {@link PeerGUI}).
+     * 
+     * 
+     * @param host 
+     *              The host to be checked.
+     * 
+     * 
+     * @return 
+     *              <i>true</i> if the IP address and the port matches; 
+     *          <i>false</i> otherwise.
+     */
+    public static boolean isLocalPeer (Host host) {
+        
+        return (
+                getInterfaces().contains(host.getIPaddress()) &&
+                host.getPort() == PeerGUI.peer.getServer().getSocket().getLocalPort()
+                );
+    }
+    
     /**
      * Gets the addresses of all the active interfaces.
      * 
@@ -251,6 +274,9 @@ public class Common {
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             
+            /* Adds the wildcard address -> 0.0.0.0 */
+            addresses.add(new InetSocketAddress(0).getAddress());
+                
             while (interfaces.hasMoreElements()) {
                 
                 NetworkInterface iface = interfaces.nextElement();
@@ -263,11 +289,10 @@ public class Common {
 
                     addresses.add(addr.getAddress());
                 }
-                
             }
         } catch (SocketException ex) {
             
-            logger.logError("SocketException at Common.getInterfaces(): "
+            logger.logError("Exception at Common.getInterfaces(): "
                             + ex.getMessage());
         }
         

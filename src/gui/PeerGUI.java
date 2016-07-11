@@ -6,7 +6,6 @@
 package gui;
 
 import common.Common;
-import static common.Common.logger;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -22,6 +21,9 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import peer.Peer;
+
+
+import static common.Common.logger;
 
 /**
  *  Graphic application for the peer.

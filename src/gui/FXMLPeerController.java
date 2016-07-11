@@ -6,13 +6,10 @@
 package gui;
 
 import common.Common;
-import static common.Common.logger;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -22,8 +19,6 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
@@ -34,6 +29,10 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.TextFlow;
 import peer.Host;
+
+import static gui.PeerGUI.peer;
+import static common.Common.logger;
+import java.net.InetAddress;
 
 /**
  *  Controller for {@code FXMLPeer}.
@@ -97,7 +96,7 @@ public class FXMLPeerController implements Initializable {
     @FXML
     private void checkConnection () {
         
-        if (PeerGUI.peer.checkConnection()) {
+        if (peer.checkConnection()) {
             
             logger.logWarning("All connections were succesfully checked.\n");
         }
@@ -114,7 +113,7 @@ public class FXMLPeerController implements Initializable {
         
         if (host != null) {
             
-            if (PeerGUI.peer.connect(host)) {
+            if (peer.connect(host)) {
                 
                 /* Adds a new tab for the connection messages to be shown */
                 addTab(host.getDataFlow());
@@ -149,7 +148,7 @@ public class FXMLPeerController implements Initializable {
         /* Sets a handler for a closure request */
         newTab.setOnCloseRequest(e -> {
             
-            if (PeerGUI.peer.leaveChatRoom(chatRoomID)) {
+            if (peer.leaveChatRoom(chatRoomID)) {
                 
                 logger.logWarning("Disconnected correctly.\n");
             } else {
@@ -174,6 +173,15 @@ public class FXMLPeerController implements Initializable {
         /* Adds the new tab and selects it */
         roomsTabPane.getTabs().add(newTabPos, newTab);
         roomsTabPane.getSelectionModel().select(newTab);
+        
+        /* Adds a new alias for the local peer */
+        for (InetAddress addr : Common.getInterfaces()) {
+         
+            logger.setAlias(new Host (addr,
+                                      peer.getServer().getSocket().getLocalPort(),
+                                      chatRoomID)
+                            , "You");
+        }
     }
     
     /**
@@ -234,7 +242,7 @@ public class FXMLPeerController implements Initializable {
         disconnectButton.setOnAction(e -> {
             
             e.consume();
-            PeerGUI.peer.leaveChatRoom(chatRoomID);
+            peer.leaveChatRoom(chatRoomID);
             
             /* Shows a little message and leaves the tab open */
             logger.logMsg("\n---------------------\n"
@@ -285,12 +293,16 @@ public class FXMLPeerController implements Initializable {
         
         String message = (userInput.getText() == null)? "" : userInput.getText();
         
-        if (!PeerGUI.peer.sendMessage(message, chatRoom).isEmpty()) {
+        Host aux = new Host(Common.getInterfaces().get(0),
+                            peer.getServer().getSocket().getLocalPort(),
+                            chatRoom);
+        
+        logger.logMsg(message + "\r\n", aux, true);
+        
+        if (!peer.sendMessage(message, chatRoom).isEmpty()) {
             
             logger.logWarning("Some peers may have not received the message.\n");
         }
-        
-        logger.logMsg("You:\n\t" + message + "\n", chatRoom);
         
         userInput.setText(null);
     }
@@ -339,7 +351,8 @@ public class FXMLPeerController implements Initializable {
                     
         } catch (IOException ex) {
             
-            Logger.getLogger(PeerGUI.class.getName()).log(Level.SEVERE, null, ex);
+            logger.logError("IOException at FXMLPeerController.changeLanguage():"
+                            + ex.getMessage() + "\n");
         } 
     }
     
@@ -349,7 +362,7 @@ public class FXMLPeerController implements Initializable {
      */
     private void close () {
         
-        if (PeerGUI.peer.close()) {
+        if (peer.close()) {
             
             logger.logWarning("Closed correctly.\n");
         } else {
