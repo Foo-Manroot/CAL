@@ -73,7 +73,7 @@ public class ServerThread extends Thread {
         this.notifications = new ConcurrentLinkedQueue<>();
         
         try {
-            /* Initializes the server thread */
+            /* Initialises the server thread */
             socket = new DatagramSocket (port);
             
         } catch (SocketException ex) {
@@ -102,7 +102,7 @@ public class ServerThread extends Thread {
         this.notifications = new ConcurrentLinkedQueue<>();
         
         try {
-            /* Initializes the server thread */
+            /* Initialises the server thread */
             socket = new DatagramSocket ();
             
         } catch (SocketException ex) {

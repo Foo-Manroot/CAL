@@ -56,7 +56,7 @@ public class Peer {
         if (server.getSocket() != null) {
                    
             logger.logWarning("Peer listening on "
-                            + server.getSocket().getLocalAddress().getHostAddress()
+                            + server.getSocket().getLocalAddress()
                             + ":" + server.getSocket().getLocalPort() + "\n");
         } else {
             
@@ -81,7 +81,7 @@ public class Peer {
         if (server.getSocket() != null) {
                    
             logger.logWarning("Peer listening on "
-                            + server.getSocket().getLocalAddress().getHostAddress()
+                            + server.getSocket().getLocalAddress()
                             + ":" + server.getPort() + "\n");
         } else {
             

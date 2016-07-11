@@ -11,6 +11,7 @@ import control.ControlMessage;
 import control.Notification;
 import control.PacketCreator;
 import java.net.UnknownHostException;
+
 import static common.Common.logger;
 
 /**
@@ -43,7 +44,7 @@ public class Host implements Serializable {
      * to the destination one and the response to come back from the destination
      * host to the origin one.
      */
-    private float RTT = 100;
+    private float RTT = 1000;
     
     /**
      * Indicates which communication this host belongs to.
@@ -206,6 +207,7 @@ public class Host implements Serializable {
         float count;
         DatagramPacket aux;
         Notification notification;
+        Date sendDate;
         
         do {
             try {
@@ -220,6 +222,7 @@ public class Host implements Serializable {
                     aux.setAddress(IPaddress);
                     aux.setPort(port);
                     
+                    sendDate = new Date();
                     socket.send(aux);
                     
                     /* Notifies the server and waits for the answer */
@@ -239,8 +242,10 @@ public class Host implements Serializable {
                     
                     if (waitedResponse.isReceived()) {
                         
-                        /* Updates the last connection date */
+                        /* Updates the last connection date and the RTT */
                         updateLastConnection();
+                        updateRTT(new Date().getTime() - sendDate.getTime());
+                        
                         return true;
                     }
                 }
@@ -275,7 +280,7 @@ public class Host implements Serializable {
                 
                 socket.send(packet);
                 
-                /* Updates the las connection date */
+                /* Updates the last connection date */
                 updateLastConnection();
             }
             
@@ -296,7 +301,7 @@ public class Host implements Serializable {
      *              Port of this host where the packet should be sent.
      */
     public void send (DatagramPacket packet, int port) {
-        
+                
         try {
             /* Creates the socket, sets the destination address to the
             packet and sends it */ 
@@ -307,7 +312,7 @@ public class Host implements Serializable {
                 
                 socket.send(packet);
                 
-                /* Updates the las connection date */
+                /* Updates the last connection date */
                 updateLastConnection();
             }
             
