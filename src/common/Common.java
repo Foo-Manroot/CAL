@@ -17,6 +17,7 @@ import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import javax.annotation.Generated;
 import peer.Host;
 
 /**
@@ -63,9 +64,10 @@ public class Common {
      */
     public static ConnectionObserver connectionObserver = new ConnectionObserver();
 
-    /* ----------------- */
-    /* ---- METHODS ---- */
-    /* ----------------- */
+/* ----------------- */
+/* ---- METHODS ---- */
+/* ----------------- */
+    
     /**
      * Logs the given message.
      *
@@ -297,5 +299,5 @@ public class Common {
         }
         
         return addresses;
-    }
+    }    
 }

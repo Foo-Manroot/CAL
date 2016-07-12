@@ -13,6 +13,7 @@ import control.PacketCreator;
 import java.net.UnknownHostException;
 
 import static common.Common.logger;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class represents a host and holds all the needed information to
@@ -39,12 +40,30 @@ public class Host implements Serializable {
     private Date lastConnection = new Date();
     
     /**
-     * Round Trip Time (in milliseconds).
-     * Average time that a packet to make a complete trip from the origin host
-     * to the destination one and the response to come back from the destination
-     * host to the origin one.
+     * Smoothed round trip time, like the one used on TCP.
+     * 
+     * <p>
+     * Used to calculate the time to wait before retransmitting a packet, as 
+     * described in <a href="https://tools.ietf.org/html/rfc6298">RFC 6298</a>.
+     * 
+     * <p>
+     * If its value is {@code -1}, no RTT measures has been taken, so this 
+     * attribute isn't initialised yet and can't be used to calculate the RTO.
      */
-    private float RTT = 1000;
+    private float SRTT = -1;
+    
+    /**
+     * Round Trip Time Variation, like the one used on TCP.
+     * 
+     * <p>
+     * Used to calculate the time to wait before retransmitting a packet, as 
+     * described in <a href="https://tools.ietf.org/html/rfc6298">RFC 6298</a>.
+     * 
+     * <p>
+     * If its value is {@code -1}, no RTT measures has been taken, so this 
+     * attribute isn't initialised yet and can't be used to calculate the RTO.
+     */
+    private float RTTVAR = -1;
     
     /**
      * Indicates which communication this host belongs to.
@@ -162,22 +181,59 @@ public class Host implements Serializable {
     
     
     /**
-     * Updates the value of RTT.
+     * Updates the needed values for the calculation of the estimated RTT.
      * 
-     * @param lastRTTSample
-     *              The time that took the last response to come back after a 
-     *          message has been sent.
+     * @param sampleRTT
+     *              The time, in milliseconds that took the last response to 
+     *          come back after a message has been sent.
      * 
      * @return 
-     *              The updated value of {@code RTT}.
+     *              The updated value of {@code SRTT}.
      */
-    public float updateRTT (float lastRTTSample) {
+    public float updateRTT (float sampleRTT) {
         
-        float alpha = 0.875f;
+        float alpha = (1 / 8);
+        float beta = (1 / 4);
         
-        RTT = (RTT * (1 - alpha)) + (lastRTTSample * alpha);
+        /* If any of the needed attributes are negative, no measures has been
+        taken yet */
+        if (SRTT < 0 || RTTVAR < 0) {
         
-        return RTT;
+            SRTT = sampleRTT;
+            RTTVAR = (sampleRTT / 2);
+        } else {
+        
+            RTTVAR = (1 - beta) * RTTVAR + beta * Math.abs(SRTT - sampleRTT);
+            SRTT = (1 - alpha) * SRTT + alpha * sampleRTT;
+        }
+        
+        return SRTT;
+    }
+    
+    /**
+     * Returns the retransmission timeout (the time to wait before a packet to
+     * be retransmitted), calculated as described in 
+     * <a href="https://tools.ietf.org/html/rfc6298">RFC 6298</a>.
+     */
+    private float getRTO () {
+        
+        /* Constant defined on the RFC 6298 */
+        float k = 4;
+        float RTO;
+        
+        /* If any of the needed attributes are negative, no measures has been
+        taken yet, so it must return the default value (1 second) */
+        if (SRTT < 0 || RTTVAR < 0) {
+            
+            return 1000;
+        }
+        
+        /* Calculates the RTO */
+        RTO = (SRTT + k * RTTVAR);
+        
+        return (RTO < 1000)?
+                    1000 :
+                    RTO;
     }
     
     /**
@@ -204,10 +260,13 @@ public class Host implements Serializable {
                          Notification waitedResponse,
                          Peer origin,
                          int tries) {
+        
         float count;
+        boolean retransmitted = false;
         DatagramPacket aux;
         Notification notification;
-        Date sendDate;
+        long sendTime;
+        float maxWaitTime = getRTO();
         
         do {
             try {
@@ -215,14 +274,15 @@ public class Host implements Serializable {
                 /* Creates the socket, sets the destination address to the
                 packet and sends it */
                 try (DatagramSocket socket = new DatagramSocket()) {
-                    count = 1;
+                    
+                    count = 0.1f;
                     aux = packet;
                     notification = waitedResponse;
                     
                     aux.setAddress(IPaddress);
                     aux.setPort(port);
                     
-                    sendDate = new Date();
+                    sendTime = System.currentTimeMillis();
                     socket.send(aux);
                     
                     /* Notifies the server and waits for the answer */
@@ -230,24 +290,34 @@ public class Host implements Serializable {
                     
                     /* Waits until the message comes back or the wait time
                     runs out */
-                    while (!notification.isReceived() && count > 0) {
+                    while (!notification.isReceived() && count <= 0.4) {
                         
-                        Thread.sleep((long) (RTT * count));
+                        Thread.sleep((long) (maxWaitTime * count));
                         
-                        /* Decreases the counter, so it waits RTT, then
-                        0'8 * RTT, RTT * 0'2... until it comes to RTT * 0 */
-                        count -= 0.2;
+                        /* Decreases the counter, so it waits (waitTime x 0'1),
+                        then (waitTime x 0'2), and so on, until it comes to 
+                        (waitTime x 0'4), so the total slept time equals
+                        (waiTime x 1) */
+                        count += 0.1;
                     }
                     
                     
                     if (waitedResponse.isReceived()) {
                         
-                        /* Updates the last connection date and the RTT */
+                        /* Updates the last connection date */
                         updateLastConnection();
-                        updateRTT(new Date().getTime() - sendDate.getTime());
+                        
+                        /* Only updates the RTT if the packet hasn't been 
+                        retransmitted (Karn's algorithm) */
+                        if (!retransmitted) {
+                            
+                            updateRTT (System.currentTimeMillis() - sendTime);
+                        }
                         
                         return true;
-                    }
+                    } 
+                    
+                    retransmitted = true;
                 }
 
             } catch (IOException | InterruptedException ex) {
@@ -347,30 +417,6 @@ public class Host implements Serializable {
         return send (packet, notif, origin, tries);
     }
     
-
-    /**
-     * Returns a string representation of this object. The returned string will
-     * be formatted this way:
-     * <pre>
-     * IPaddress: (address)
-     *      Port: (port number)
-     *      Last connection: (last connection date)
-     *      RTT: (RTT)
-     *      Data flow: (data flow ID)
-     * </pre>
-     * 
-     * @return 
-     *              A string with all the values that this object has.
-     */
-    @Override
-    public String toString() {
-        return "IPaddress: " + IPaddress
-               + "\n\tPort: " + port
-               + "\n\tLast connection: " + lastConnection
-               + "\n\tRTT: " + RTT
-               + "\n\tData flow: " + dataFlow 
-               + "\n";
-    }
     
     /**
      *  Creates and returns a byte array with the essential information about
@@ -401,6 +447,31 @@ public class Host implements Serializable {
         System.arraycopy(portArray, 0, retVal, 5, 4);
         
         return retVal;
+    }
+    
+    
+    /**
+     * Returns a string representation of this object. The returned string will
+     * be formatted this way:
+     * <pre>
+     * IPaddress: (address)
+     *      Port: (port number)
+     *      Last connection: (last connection date)
+     *      RTT: (RTT)
+     *      Data flow: (data flow ID)
+     * </pre>
+     * 
+     * @return 
+     *              A string with all the values that this object has.
+     */
+    @Override
+    public String toString() {
+        return "IPaddress: " + IPaddress
+               + "\n\tPort: " + port
+               + "\n\tLast connection: " + lastConnection
+               + "\n\tRTT: " + ((SRTT < 0)? "?" : SRTT)
+               + "\n\tData flow: " + dataFlow 
+               + "\n";
     }
     
 /* ----------------------------- */
@@ -462,17 +533,5 @@ public class Host implements Serializable {
     public Date getLastConnection() {
         
         return lastConnection;
-    }
-
-    /**
-     * Returns the time (in milliseconds) that takes a packet to travel from 
-     * the origin host to the destination and come back to the origin again.
-     * 
-     * @return 
-     *              The value of {@code RTT}
-     */
-    public float getRTT() {
-        
-        return RTT;
     }
 }
