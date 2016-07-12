@@ -469,7 +469,7 @@ public class Host implements Serializable {
         return "IPaddress: " + IPaddress
                + "\n\tPort: " + port
                + "\n\tLast connection: " + lastConnection
-               + "\n\tRTT: " + ((SRTT < 0)? "?" : SRTT)
+               + "\n\tRTT: " + ((SRTT < 0)? "-" : SRTT)
                + "\n\tData flow: " + dataFlow 
                + "\n";
     }

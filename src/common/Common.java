@@ -4,6 +4,7 @@ import control.ConnectionObserver;
 import control.ControlMessage;
 import gui.PeerGUI;
 import java.io.EOFException;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,7 +18,6 @@ import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import javax.annotation.Generated;
 import peer.Host;
 
 /**
@@ -32,7 +32,7 @@ public class Common {
     public static final int BUFF_SIZE = 2048;
 
     /**
-     * Route to the file where the hosts information will be stored.
+     * Route to the default file where the hosts information will be stored.
      */
     public static final String FILE_PATH = "./known_hosts";
 
@@ -71,9 +71,11 @@ public class Common {
     /**
      * Logs the given message.
      *
-     * @param message Message to be logged.
+     * @param message 
+     *              Message to be logged.
      *
      * @deprecated
+     *              This functionality is now provided by {@link Logger}
      * @see Logger
      */
     public static synchronized void log(String message) {
@@ -84,11 +86,13 @@ public class Common {
     /**
      * Opens a data file an returns its content.
      *
-     * @param path Path to the file.
+     * @param path 
+     *              Path to the file.
      *
-     * @return The content of the file on a new object. If the file didn't
-     * exists or no objects are stored there, an empty {@link ArrayList} is
-     * returned.
+     * @return 
+     *              The content of the file on a new object. If the file didn't
+     *          exists or no objects are stored there, an empty {@link ArrayList} is
+     *          returned.
      */
     public synchronized static ArrayList<Object> openDatFile(String path) {
 
@@ -130,30 +134,36 @@ public class Common {
     /**
      * Stores the given object on the specified file.
      *
-     * @param path Path to the file.
+     * @param path
+     *              Path to the file.
      *
-     * @param content Object to be stored
+     * @param content
+     *              Object to be stored
      *
-     * @param append If this parameter is <i>true</i>, the given content will be
-     * appended to the previous one of the file (if any). If it's
-     * <i>false</i>, the content will be overridden.
+     * @param append 
+     *              If this parameter is <i>true</i>, the given content will be
+     *          appended to the previous one of the file (if any). If it's
+     *          <i>false</i>, the content will be overridden.
      *
      * @return
-     * <i>true</i> if the content was stored successfully,
-     * <i>false</i> if any error occurred.
+     *              <i>true</i> if the content was stored successfully,
+     *          <i>false</i> if any error occurred.
      */
     public synchronized static boolean storeDatFile(String path,
-            Object content,
-            boolean append) {
+                                                    Object content,
+                                                    boolean append) {
 
+        File f = new File(path);
         /* Different ObjectOutputStreams have different headers, so an error
          occurs when trying to read a file appended with two different
          ObjectOutputStreams. That's why the previous content of the file
          is retrieved to write it again with the same header */
         ArrayList<Object> previousContent = null;
 
-        if (append) {
-
+        if (append &&
+            f.exists() &&
+            f.isFile()) {
+            
             previousContent = openDatFile(path);
         }
 
@@ -190,11 +200,13 @@ public class Common {
      * array with 4 positions. On the first one ({@code array[0]}) will be the
      * highest byte of the integer.
      *
-     * @param port Port number to be converted.
+     * @param port 
+     *              Port number to be converted.
      *
      *
-     * @return A byte array with the highest part of the number on
-     * {@code array[0]}.
+     * @return 
+     *              A byte array with the highest part of the number on
+     *          {@code array[0]}.
      */
     public static byte[] intToArray(int port) {
 
@@ -211,11 +223,13 @@ public class Common {
      * Converts the given number (stored in the array of 4 bytes) into an
      * integer. On {@code array[0]} will be the highest byte of the integer.
      *
-     * @param array A byte array with the highest part of the number on
-     * {@code array[0]}.
+     * @param array 
+     *              A byte array with the highest part of the number on
+     *          {@code array[0]}.
      *
      *
-     * @return An integer whose value equals the one stored on the array.
+     * @return 
+     *              An integer whose value equals the one stored on the array.
      */
     public static int arrayToInt(byte[] array) {
         int port;

@@ -3,7 +3,6 @@ package peer;
 import common.Common;
 import control.ControlMessage;
 import control.PacketCreator;
-import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
@@ -12,11 +11,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * List for the peer to know with which hosts is communicating.
- * 
- * <p>
- * Implements {@link Serializable} so it can be stored in a file.
  */
-public class HostsList implements Serializable {
+public class HostsList {
     
     /**
      * Structure to store all the known hosts.
@@ -407,7 +403,17 @@ public class HostsList implements Serializable {
      */
     public boolean writeFile (String path, boolean append) {
         
-        return Common.storeDatFile(Common.FILE_PATH, this, append);
+        ArrayList<Host> knownHosts = new ArrayList<>();
+        
+        for (Host h : hosts) {
+            
+            if (!knownHosts.contains(h)) {
+                
+                knownHosts.add(h);
+            }
+        }
+        
+        return Common.storeDatFile (path, knownHosts, append);
     }
     
 /* ----------------------------- */

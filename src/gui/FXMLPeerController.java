@@ -33,6 +33,8 @@ import peer.Host;
 import static gui.PeerGUI.peer;
 import static common.Common.logger;
 import java.net.InetAddress;
+import java.util.Optional;
+import javafx.scene.control.TextInputDialog;
 
 /**
  *  Controller for {@code FXMLPeer}.
@@ -125,6 +127,33 @@ public class FXMLPeerController implements Initializable {
         } else {
             
             roomsTabPane.getSelectionModel().selectFirst();
+        }
+    }
+    
+    /**
+     * Saves the information about the known hosts on a file.
+     */
+    @FXML
+    private void saveHosts () {
+     
+        Optional <String> filePath;
+        TextInputDialog dialog = new TextInputDialog(Common.FILE_PATH);
+        
+        dialog.setContentText(ResourceBundle
+                                .getBundle(Common.resourceBundle)
+                                .getString("ask_file_path"));
+        
+        filePath = dialog.showAndWait();
+        
+        if (filePath.isPresent() && !filePath.get().isEmpty()) {
+            
+            if (peer.getHostsList().writeFile (filePath.get(), true)) {
+                
+                logger.logWarning("File stored successfully.\n");
+            } else {
+                
+                logger.logError("Error storing the file.\n");
+            }
         }
     }
     
