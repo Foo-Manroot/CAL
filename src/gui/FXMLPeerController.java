@@ -32,9 +32,12 @@ import peer.Host;
 
 import static gui.PeerGUI.peer;
 import static common.Common.logger;
+import java.io.File;
 import java.net.InetAddress;
 import java.util.Optional;
 import javafx.scene.control.TextInputDialog;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 
 /**
  *  Controller for {@code FXMLPeer}.
@@ -136,18 +139,27 @@ public class FXMLPeerController implements Initializable {
     @FXML
     private void saveHosts () {
      
-        Optional <String> filePath;
-        TextInputDialog dialog = new TextInputDialog(Common.FILE_PATH);
+        FileChooser fileChooser = new FileChooser();
         
-        dialog.setContentText(ResourceBundle
-                                .getBundle(Common.resourceBundle)
-                                .getString("ask_file_path"));
+        fileChooser.setTitle(resourceBundle.getString("ask_file_path"));
+        fileChooser.setInitialFileName(Common.FILE_PATH);
         
-        filePath = dialog.showAndWait();
+        fileChooser.getExtensionFilters().addAll(
+                new ExtensionFilter("Text Files", "*.txt"),
+                new ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif"),
+                new ExtensionFilter("Audio Files", "*.wav", "*.mp3", "*.aac"),
+                new ExtensionFilter("All Files", "*.*"));
         
-        if (filePath.isPresent() && !filePath.get().isEmpty()) {
+        File selectedFile = fileChooser.showSaveDialog(roomsTabPane.getScene().getWindow());
+        
+        if (selectedFile != null) {
             
-            if (peer.getHostsList().writeFile (filePath.get(), true)) {
+            System.out.println(selectedFile.toString());
+        }
+        
+        if (selectedFile != null) {
+            
+            if (peer.getHostsList().writeFile (selectedFile.getPath(), true)) {
                 
                 logger.logWarning("File stored successfully.\n");
             } else {
@@ -226,114 +238,7 @@ public class FXMLPeerController implements Initializable {
      */
     private Pane newRoomPane (byte chatRoomID) {
         
-        VBox pane = new VBox();
-        
-        pane.setAlignment(Pos.CENTER);
-        
-        /* Adds three main elements: 
-            the message text area (where the messages will be displayed),
-            the user input text area (where the user will type the message)
-            and the bottom pane, with all the buttons for the conversation 
-            (send, disconnect...).
-        */
-        TextFlow msgTextArea = new TextFlow();
-        msgTextArea.setId("msgTextArea" + chatRoomID);
-        
-        TextArea userInput = new TextArea();
-        userInput.setWrapText(true);
-        userInput.setOnKeyPressed((KeyEvent keyEvent) -> {
-            
-            if (keyEvent.getCode() == KeyCode.ENTER)  {
-                
-                keyEvent.consume();
-                send(userInput, chatRoomID);
-            }
-        });
-        
-        msgTextArea.setPrefHeight(200);
-        userInput.setPrefHeight(msgTextArea.getPrefHeight() / 2);
-        
-        /* Pane with the buttons */
-        HBox optionsPane = new HBox();
-        /* Send button */
-        Button sendButton = new Button();
-        sendButton.setText(resourceBundle.getString("button_send"));
-        
-        sendButton.setOnAction(e -> {
-            
-            e.consume();
-            send(userInput, chatRoomID);
-        });
-        /* Disconnect button */
-        Button disconnectButton = new Button();
-        disconnectButton.setText(resourceBundle.getString("button_disconnect"));
-        /* Action for the disconnection button */
-        disconnectButton.setOnAction(e -> {
-            
-            e.consume();
-            peer.leaveChatRoom(chatRoomID);
-            
-            /* Shows a little message and leaves the tab open */
-            logger.logMsg("\n---------------------\n"
-                        + "Disconnected from room."
-                        + "\n---------------------\n", chatRoomID);
-            
-            /* Changes the state of the text areas */
-            userInput.setEditable(false);
-            userInput.setDisable(true);
-        });
-        
-        /* Adds a scroll bar for the msgTextArea */
-        ScrollPane msgScroll = new ScrollPane(msgTextArea);
-        msgScroll.setPrefSize(msgTextArea.getPrefWidth(),
-                              msgTextArea.getPrefHeight());
-        msgScroll.setFitToWidth(true);
-        
-         /* Adds a listener so the scroll bar can go to the 
-        bottom automatically */
-        msgTextArea.heightProperty().addListener( observable -> {
-            
-            pane.layout();
-            msgScroll.setVvalue(msgScroll.getVmax());
-        });
-        
-        optionsPane.setAlignment(Pos.BASELINE_RIGHT);
-        optionsPane.getChildren().addAll(disconnectButton, sendButton);
-        
-        /* Adds the elements to the main pane */
-        pane.getChildren().addAll(msgScroll, userInput, optionsPane);
-        
-        logger.addTextArea(msgTextArea, 2);
-        
-        return pane;
-    }
-    
-    
-    /**
-     * Sends the message to the rest of the peers on the same room.
-     * 
-     * @param userInput 
-     *              TextArea where the message has been written.
-     * 
-     * @param chatRoom 
-     *              ID of the chat room where the message will be sent.
-     */
-    private void send (TextArea userInput, byte chatRoom) {
-        
-        String message = (userInput.getText() == null)? "" : userInput.getText();
-        
-        Host aux = new Host(Common.getInterfaces().get(0),
-                            peer.getServer().getSocket().getLocalPort(),
-                            chatRoom);
-        
-        logger.logMsg(message + "\r\n", aux, true);
-        
-        if (!peer.sendMessage(message, chatRoom).isEmpty()) {
-            
-            logger.logWarning("Some peers may have not received the message.\n");
-        }
-        
-        userInput.setText(null);
+        return PaneCreator.roomsTabPane(chatRoomID, resourceBundle, peer);
     }
     
     /**

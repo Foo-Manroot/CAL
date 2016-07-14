@@ -738,6 +738,7 @@ public class ServerThread extends Thread {
                 msg = "\n--------------------\n"
                     + "Peer disconnected: "
                     + sender.getIPaddress() + ":" + sender.getPort()
+                        + " - " + logger.getName(sender)
                     +"\n--------------------\n";
                 
                 logger.logMsg(msg, sender, false);

@@ -240,7 +240,7 @@ public class Logger {
      * Generates and adds the text to the given TextFlow. Also, adds the 
      * necessary items, like a context menu.
      */
-    private void genText (TextFlow outArea, Host host, String msg) {
+    private void genText (TextFlow outArea, Host host, String msg, Text hostName) {
         
         /* Notifies the GUI thread to add the text */
         Platform.runLater(() -> {
@@ -296,6 +296,8 @@ public class Logger {
                 if (answer.isPresent() && !((String) answer.get()).isEmpty()) {
                     
                     hostsAlias.put(host, (String) answer.get());
+                    
+                    hostName.setText((String) answer.get() + "\n\t");
                 }
             });
             
@@ -324,6 +326,22 @@ public class Logger {
                 colour = addHost(host);
             } 
 
+            /* Adds the host name (if needed) */
+            if (!hostName.getText().isEmpty()) {
+            
+                hostName.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+
+                    if (e.getButton() == MouseButton.SECONDARY) {
+
+                        context.show(hostName, e.getScreenX(), e.getScreenY());
+                    }
+                });
+                
+                hostName.setFill(colour);
+                outArea.getChildren().add(hostName);
+            }
+            
+            /* Adds the message */
             text = new Text(msg);
 
             text.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
@@ -433,6 +451,7 @@ public class Logger {
         BufferedWriter output;
         String textAreaID;
         byte dataFlowAux;
+        Text hostName = new Text();
         String msg;
         
         if (format) {
@@ -446,6 +465,8 @@ public class Logger {
                 msg = message;
             } else {
                 
+                /* Appends the host name to identify the sender of the message */
+                hostName.setText(getName(host) + "\n\t");
                 msg = getName(host)
                       + "\n\t" + message;
                 
@@ -503,7 +524,7 @@ public class Logger {
                 
                 if (host.getDataFlow() == dataFlowAux) {
                  
-                    genText(outArea, host, msg);
+                    genText(outArea, host, message, hostName);
                 }
             }
         }
