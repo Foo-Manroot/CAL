@@ -5,6 +5,9 @@
  */
 package gui;
 
+import static gui.PeerGUI.peer;
+import static common.Common.logger;
+
 import common.Common;
 import java.io.IOException;
 import java.net.URL;
@@ -14,28 +17,14 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.TextArea;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.TextFlow;
 import peer.Host;
-
-import static gui.PeerGUI.peer;
-import static common.Common.logger;
 import java.io.File;
 import java.net.InetAddress;
-import java.util.Optional;
-import javafx.scene.control.TextInputDialog;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 
@@ -146,8 +135,7 @@ public class FXMLPeerController implements Initializable {
         
         fileChooser.getExtensionFilters().addAll(
                 new ExtensionFilter("Text Files", "*.txt"),
-                new ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif"),
-                new ExtensionFilter("Audio Files", "*.wav", "*.mp3", "*.aac"),
+                new ExtensionFilter("Data Files", "*.dat"),
                 new ExtensionFilter("All Files", "*.*"));
         
         File selectedFile = fileChooser.showSaveDialog(roomsTabPane.getScene().getWindow());
@@ -168,7 +156,7 @@ public class FXMLPeerController implements Initializable {
             }
         }
     }
-    
+        
 /* ------------------------------ */
 /* ---- END OF @FXML METHODS ---- */
 /* ------------------------------ */
@@ -218,7 +206,7 @@ public class FXMLPeerController implements Initializable {
         /* Adds a new alias for the local peer */
         for (InetAddress addr : Common.getInterfaces()) {
          
-            logger.setAlias(new Host (addr,
+            logger.setHostAlias(new Host (addr,
                                       peer.getServer().getSocket().getLocalPort(),
                                       chatRoomID)
                             , "You");

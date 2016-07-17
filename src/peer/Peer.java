@@ -5,6 +5,8 @@
  */
 package peer;
 
+import static common.Common.logger;
+
 import common.Common;
 import control.ControlMessage;
 import control.Notification;
@@ -12,7 +14,6 @@ import control.PacketCreator;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import static common.Common.logger;
 
 /**
  * This class represents a node of the chat room.
@@ -316,7 +317,7 @@ public class Peer {
         retVal = host.send(packet, expectedAnswer, this, 4);
         
         /* Removes the notification from the list */
-        server.removeNotification(expectedAnswer);
+//        server.removeNotification(expectedAnswer);
         
         return retVal;
     }

@@ -5,21 +5,32 @@
  */
 package gui;
 
+import static common.Common.logger;
+
 import common.Common;
+import java.util.Enumeration;
+import java.util.Optional;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import peer.Host;
-
-import static common.Common.logger;
 import peer.Peer;
 
 /**
@@ -27,6 +38,123 @@ import peer.Peer;
  * the chat room.
  */
 public class PaneCreator {
+    
+    /**
+     * Generates and adds the text to the given TextFlow. Also, adds the 
+     * necessary items, like a context menu.
+     * 
+     * @param outArea
+     *              Text area where the new text will be added.
+     * 
+     * @param host
+     *              Host that sent the message.
+     * 
+     * @param msg
+     *              The received message.
+     * 
+     * @param hostName
+     *              The text area where the host's name will be shown.
+     */
+    public static void genText (TextFlow outArea,
+                                Host host,
+                                String msg,
+                                Text hostName) {
+        
+        /* Notifies the GUI thread to add the text */
+        Platform.runLater(() -> {
+
+            Color colour;
+        
+            /* Adds a context menu so a new connection can be 
+            done with the selected host */
+            MenuItem connectMenu = new MenuItem(
+                    ResourceBundle.getBundle(Common.resourceBundle)
+                            .getString("private_conv_menu")
+                    );
+
+            connectMenu.setOnAction(e -> {
+
+                    Alert alert = new Alert (Alert.AlertType.ERROR);
+                    String text = ResourceBundle
+                                    .getBundle(Common.resourceBundle)
+                                    .getString("error_private_conv");
+
+                    /* Starts a new conversation */
+                    if (!PeerGUI.peer.startConversation(host)) {
+
+                        logger.logError(text);
+                        alert.setContentText(text);
+                        alert.show();
+                    }
+                });
+            
+            /* Adds another menu item to set the host alias */
+            MenuItem aliasMenu = new MenuItem(
+                    ResourceBundle.getBundle(Common.resourceBundle)
+                            .getString("chng_alias_menu")
+                    );
+
+            aliasMenu.setOnAction(e -> {
+
+                    Optional answer;
+                    TextInputDialog dialog = new TextInputDialog();
+                    String text = ResourceBundle
+                                    .getBundle(Common.resourceBundle)
+                                    .getString("chng_alias_menu");
+
+                    dialog.setContentText(text);
+
+                    answer = dialog.showAndWait();
+
+                    /* Gets the new value and adds it to the list (only if any 
+                    value has been submitted) */
+                    if (answer.isPresent() && !((String) answer.get()).isEmpty()) {
+
+                        logger.setHostAlias(host, (String) answer.get());
+
+                        hostName.setText((String) answer.get() + ":\n\t");
+                    }
+                });
+            
+            ContextMenu context = (Common.isLocalPeer(host))? 
+                                        new ContextMenu(aliasMenu) 
+                                      : new ContextMenu(aliasMenu, connectMenu);
+            Text text;
+
+            colour = logger.getColour(host);
+
+            /* Adds the host name (if needed) and its context menu */
+            if (!hostName.getText().isEmpty()) {
+            
+                hostName.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+
+                    if (e.getButton() == MouseButton.SECONDARY) {
+
+                        context.show(hostName, e.getScreenX(), e.getScreenY());
+                    }
+                });
+                
+                hostName.setFill(colour);
+                outArea.getChildren().add(hostName);
+            }
+            
+            /* Adds the message */
+            text = new Text(msg);
+
+            text.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+
+                if (e.getButton() == MouseButton.SECONDARY) {
+
+                    context.show(text, e.getScreenX(), e.getScreenY());
+                }
+            });
+
+            text.setFill(colour);
+
+            outArea.getChildren().add(text);
+        });
+    }
+    
     
     /**
      * Creates and returns a pane with all the elements for the new chat room 
@@ -53,10 +181,13 @@ public class PaneCreator {
                                      ResourceBundle resourceBundle,
                                      Peer peer) {
         
-        VBox pane = new VBox();
+        VBox chatPane = new VBox(); /* Pane for the chat itself */
+//        VBox roomOptionsPane = new VBox(); /* Pane for the extra options */
+//        HBox mainPane = new HBox(); /* Pane to contain the others */
         
-        pane.setAlignment(Pos.CENTER);
+        chatPane.setAlignment(Pos.CENTER);
         
+    /* Chat pane */
         /* Adds three main elements: 
             the message text area (where the messages will be displayed),
             the user input text area (where the user will type the message)
@@ -118,21 +249,28 @@ public class PaneCreator {
         
          /* Adds a listener so the scroll bar can go to the 
         bottom automatically */
-        msgTextArea.heightProperty().addListener( observable -> {
+        msgTextArea.heightProperty().addListener(observable -> {
             
-            pane.layout();
+            chatPane.layout();
             msgScroll.setVvalue(msgScroll.getVmax());
         });
         
         optionsPane.setAlignment(Pos.BASELINE_RIGHT);
         optionsPane.getChildren().addAll(disconnectButton, sendButton);
         
-        /* Adds the elements to the main pane */
-        pane.getChildren().addAll(msgScroll, userInput, optionsPane);
+        /* Adds the elements to the pane */
+        chatPane.getChildren().addAll(msgScroll, userInput, optionsPane);
         
         logger.addTextArea(msgTextArea, 2);
         
-        return pane;
+    /* Options pane */
+        /* Adds a TextFlow to show the information about the connected hosts */
+//        TextFlow connectedHosts = new TextFlow();
+        
+    /* Main pane */
+        /* Adds all the secondary panes */
+        
+        return chatPane;
     }
     
     /**

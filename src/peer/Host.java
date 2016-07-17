@@ -1,5 +1,7 @@
 package peer;
 
+import static common.Common.logger;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.DatagramPacket;
@@ -11,9 +13,6 @@ import control.ControlMessage;
 import control.Notification;
 import control.PacketCreator;
 import java.net.UnknownHostException;
-
-import static common.Common.logger;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This class represents a host and holds all the needed information to

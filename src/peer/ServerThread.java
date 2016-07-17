@@ -5,6 +5,8 @@
  */
 package peer;
 
+import static common.Common.logger;
+
 import common.Common;
 import control.ControlMessage;
 import control.Notification;
@@ -20,7 +22,6 @@ import java.util.Date;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
-import static common.Common.logger;
 
 /**
  * Thread to handle the server behaviour for the peer.
@@ -166,7 +167,7 @@ public class ServerThread extends Thread {
             }
             
             /* Gets the message and prints it */
-           // System.err.println(new String (received.getData()));
+//            System.out.println(java.util.Arrays.toString(received.getData()));
         }
     }
     
@@ -377,6 +378,9 @@ public class ServerThread extends Thread {
             System.arraycopy(packetData, 0, buffer, 0, packet.getLength());
             
             this.dataFlow = buffer [1];
+//            
+//            System.out.println("Text: " + new String (buffer) +
+//                                "\nBytes: " + java.util.Arrays.toString(buffer) + "\n");
         }
         
         /**
@@ -967,10 +971,11 @@ public class ServerThread extends Thread {
                                                      packet.getAddress(),
                                                      senderPort)
                ) != null) {
-
+                
                 /* If the request has been accepted, sends an ACK back and 
-                changes the data flow ID on the hosts list. */
-                if (packet.getLength() >= args) {
+                changes the data flow ID on the hosts list. If there's any 
+                argument, it must begin on packet[args] -> (length > args) */
+                if (packet.getLength() <= args) {
                     
                     /* No args -> request ACCEPTED.
                        Creates an ACK packet */
@@ -1018,20 +1023,20 @@ public class ServerThread extends Thread {
                         after getting the arguments (the new data flow id) */
                         notification = searchNotification(packet);
 
-                        if (!notification.hasArgs()) {
+                        if (notification == null || !notification.hasArgs()) {
 
                             logger.logError("Error while negotiating a new "
                                     + "data flow ID.\n");
                             return;
                         }
 
-                        proposedDF = notification.getArgs()[0];
-
                         /* Changes the data flow of the host from the list */
                         peer.addHostDF(sender, proposedDF);
 
                         /* Finnaly, sends the ACK message */
                         sender.send(response);
+                        
+                        removeNotification(notification);
                         
                     } else {
                         /* Selects another available ID */
@@ -1045,7 +1050,7 @@ public class ServerThread extends Thread {
                         updated parameters) */
                         notification = searchNotification(sender.getIPaddress(),
                                                           dataFlow);
-                        notifications.remove(notification);
+                        removeNotification(notification);
                         argsACK = new byte [] {proposedDF};
 
                         notification = new Notification (sender.getIPaddress(),

@@ -1,6 +1,6 @@
 package common;
 
-import gui.PeerGUI;
+import gui.PaneCreator;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -10,17 +10,9 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Optional;
-import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import javafx.application.Platform;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextInputDialog;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
@@ -183,182 +175,6 @@ public class Logger {
         return new Color(r, g, b, 1);
     }
     
-    /**
-     * Sets the name that the given host will have through the rest of the 
-     * conversation.
-     * 
-     * @param host 
-     *              The host that's going to have that alias.
-     * 
-     * @param alias
-     *              The new name for this host.
-     */
-    public void setAlias (Host host, String alias) {
-        
-        hostsAlias.put(host, alias);
-    }
-    
-    /**
-     * Returns a string that represent the given host. If it was on the aliases
-     * list, returns it. If not, returns a string with just the IP address and 
-     * the port number of this host.
-     * 
-     * 
-     * @param host 
-     *              The host whose name is wanted.
-     * 
-     * 
-     * @return 
-     *              A string with the name that represents that host.
-     */
-    public String getName (Host host) {
-               
-        Host hAux;
-        Enumeration aux = hostsAlias.keys();
-        
-        /* Searches another host with the same IP address, port number and
-        data flow ID */
-        while (aux.hasMoreElements()) {
-         
-            hAux = (Host) aux.nextElement();
-            
-            if (hAux.getDataFlow() == host.getDataFlow() &&
-                hAux.getIPaddress().equals(host.getIPaddress()) &&
-                hAux.getPort() == host.getPort()) {
-                
-                return (hostsAlias.get(hAux));
-            }
-            
-        }
-        
-        /* If the host was on the list, returns its name. If not, returns a 
-        string with the IP and the port number */
-        return (host.getIPaddress() + ":" + host.getPort());
-    }
-    
-    /**
-     * Generates and adds the text to the given TextFlow. Also, adds the 
-     * necessary items, like a context menu.
-     */
-    private void genText (TextFlow outArea, Host host, String msg, Text hostName) {
-        
-        /* Notifies the GUI thread to add the text */
-        Platform.runLater(() -> {
-
-            Color colour = Color.BLACK;
-            boolean found = false;
-            Host hAux;
-            Enumeration aux = hostsColours.keys();
-        
-            /* Adds a context menu so a new connection can be 
-            done with the selected host */
-            MenuItem connectMenu = new MenuItem(
-                    ResourceBundle.getBundle(Common.resourceBundle)
-                            .getString("private_conv_menu")
-                    );
-
-            connectMenu.setOnAction(e -> {
-
-                Alert alert = new Alert (Alert.AlertType.ERROR);
-                String text = ResourceBundle
-                                .getBundle(Common.resourceBundle)
-                                .getString("error_private_conv");
-
-                /* Starts a new conversation */
-                if (!PeerGUI.peer.startConversation(host)) {
-
-                    logError(text);
-                    alert.setContentText(text);
-                    alert.show();
-                }
-            });
-            
-            /* Adds another menu item to set the host alias */
-            MenuItem aliasMenu = new MenuItem(
-                    ResourceBundle.getBundle(Common.resourceBundle)
-                            .getString("chng_alias_menu")
-                    );
-
-            aliasMenu.setOnAction(e -> {
-
-                Optional answer;
-                TextInputDialog dialog = new TextInputDialog();
-                String text = ResourceBundle
-                                .getBundle(Common.resourceBundle)
-                                .getString("chng_alias_menu");
-
-                dialog.setContentText(text);
-                
-                answer = dialog.showAndWait();
-                
-                /* Gets the new value and adds it to the list (only if any 
-                value has been submitted) */
-                if (answer.isPresent() && !((String) answer.get()).isEmpty()) {
-                    
-                    hostsAlias.put(host, (String) answer.get());
-                    
-                    hostName.setText((String) answer.get() + "\n\t");
-                }
-            });
-            
-            ContextMenu context = (Common.isLocalPeer(host))? 
-                                        new ContextMenu(aliasMenu) 
-                                      : new ContextMenu(aliasMenu, connectMenu);
-            Text text;
-
-            /* Searches the host on the list to get its colour. If
-            it wasn't there, adds it. */
-            while (aux.hasMoreElements() && !found) {
-
-                hAux = (Host) aux.nextElement();
-
-                if (hAux.getDataFlow() == host.getDataFlow() &&
-                    hAux.getIPaddress().equals(host.getIPaddress()) &&
-                    hAux.getPort() == host.getPort()) {
-
-                    colour = hostsColours.get(hAux);
-                    found = true;
-                }
-            }
-        
-            if (!found) {
-
-                colour = addHost(host);
-            } 
-
-            /* Adds the host name (if needed) */
-            if (!hostName.getText().isEmpty()) {
-            
-                hostName.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
-
-                    if (e.getButton() == MouseButton.SECONDARY) {
-
-                        context.show(hostName, e.getScreenX(), e.getScreenY());
-                    }
-                });
-                
-                hostName.setFill(colour);
-                outArea.getChildren().add(hostName);
-            }
-            
-            /* Adds the message */
-            text = new Text(msg);
-
-            text.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
-
-                if (e.getButton() == MouseButton.SECONDARY) {
-
-                    context.show(text, e.getScreenX(), e.getScreenY());
-                }
-            });
-
-            text.setFill(colour);
-
-            outArea.getChildren().add(text);
-        });
-    }
-    
-    
 /* ------------------------- */
 /* ---- LOGGING METHODS ---- */
 /* ------------------------- */  
@@ -466,7 +282,7 @@ public class Logger {
             } else {
                 
                 /* Appends the host name to identify the sender of the message */
-                hostName.setText(getName(host) + "\n\t");
+                hostName.setText(getName(host) + ":\n\t");
                 msg = getName(host)
                       + "\n\t" + message;
                 
@@ -524,7 +340,7 @@ public class Logger {
                 
                 if (host.getDataFlow() == dataFlowAux) {
                  
-                    genText(outArea, host, message, hostName);
+                    PaneCreator.genText(outArea, host, message, hostName);
                 }
             }
         }
@@ -712,6 +528,9 @@ public class Logger {
         }
     }
     
+/* -------------------------------- */
+/* ---- END OF LOGGING METHODS ---- */
+/* -------------------------------- */
     
     /**
      * Adds a new host and the colour that will represent it when it's printed
@@ -723,7 +542,7 @@ public class Logger {
      * @param colour 
      *              The colour with which the text host's name will be printed.
      */
-    public void addHost (Host host, Color colour) {
+    public void setHostColour (Host host, Color colour) {
      
         hostsColours.put(host, colour);
     }
@@ -738,7 +557,7 @@ public class Logger {
      * @return
      *              The colour with which the text host's name will be printed.
      */
-    public Color addHost (Host host) {
+    public Color setHostColour (Host host) {
         
         Color colour = chooseColour();
         
@@ -747,6 +566,95 @@ public class Logger {
         return colour;
     }
     
+    /**
+     * Sets the name that the given host will have through the rest of the 
+     * conversation.
+     * 
+     * @param host 
+     *              The host that's going to have that alias.
+     * 
+     * @param alias
+     *              The new name for this host.
+     */
+    public void setHostAlias (Host host, String alias) {
+        
+        hostsAlias.put(host, alias);
+    }
+    
+    /**
+     * Returns a string that represent the given host. If it was on the aliases
+     * list, returns it. If not, returns a string with just the IP address and 
+     * the port number of this host.
+     * 
+     * 
+     * @param host 
+     *              The host whose name is wanted.
+     * 
+     * 
+     * @return 
+     *              A string with the name that represents that host.
+     */
+    public String getName (Host host) {
+               
+        Host hAux;
+        Enumeration aux = hostsAlias.keys();
+        
+        /* Searches another host with the same IP address, port number and
+        data flow ID */
+        while (aux.hasMoreElements()) {
+         
+            hAux = (Host) aux.nextElement();
+            
+            if (hAux.getDataFlow() == host.getDataFlow() &&
+                hAux.getIPaddress().equals(host.getIPaddress()) &&
+                hAux.getPort() == host.getPort()) {
+                
+                return (hostsAlias.get(hAux));
+            }
+            
+        }
+        
+        /* If the host was on the list, returns its name. If not, returns a 
+        string with the IP and the port number */
+        return (host.getIPaddress() + ":" + host.getPort());
+    }   
+    
+    /**
+     *  Returns a colour that represent the given host. If it was on the colours
+     * list, returns it. If not, returns a new colour and adds it to the list.
+     * 
+     * 
+     * @param host 
+     *              The host whose representative colour is wanted.
+     * 
+     * 
+     * @return 
+     *              A colour to represent that host.
+     */
+    public Color getColour (Host host) {
+               
+        Host hAux;
+        Enumeration aux = hostsColours.keys();
+        
+        /* Searches another host with the same IP address, port number and
+        data flow ID */
+        while (aux.hasMoreElements()) {
+         
+            hAux = (Host) aux.nextElement();
+            
+            if (hAux.getDataFlow() == host.getDataFlow() &&
+                hAux.getIPaddress().equals(host.getIPaddress()) &&
+                hAux.getPort() == host.getPort()) {
+                
+                return (hostsColours.get(hAux));
+            }
+            
+        }
+        
+        /* If the host was on the list, chooses a new colour for it and adds it
+        to the list */
+        return setHostColour(host);
+    }   
     
     /**
      * Adds the given stream on the proper lists, depending on the parameter

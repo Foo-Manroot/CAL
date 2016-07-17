@@ -5,8 +5,9 @@
  */
 package gui;
 
-import common.Common;
 import static common.Common.logger;
+
+import common.Common;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ResourceBundle;
