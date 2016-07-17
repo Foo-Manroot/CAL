@@ -207,8 +207,8 @@ public class FXMLPeerController implements Initializable {
         for (InetAddress addr : Common.getInterfaces()) {
          
             logger.setHostAlias(new Host (addr,
-                                      peer.getServer().getSocket().getLocalPort(),
-                                      chatRoomID)
+                                          peer.getServer().getSocket().getLocalPort(),
+                                          chatRoomID)
                             , "You");
         }
     }

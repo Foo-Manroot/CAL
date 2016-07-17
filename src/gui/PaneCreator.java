@@ -6,9 +6,11 @@
 package gui;
 
 import static common.Common.logger;
+import static common.Common.parser;
 
+import commands.Command;
+import commands.Parser;
 import common.Common;
-import java.util.Enumeration;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
@@ -20,7 +22,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextInputDialog;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -108,7 +109,9 @@ public class PaneCreator {
 
                     /* Gets the new value and adds it to the list (only if any 
                     value has been submitted) */
-                    if (answer.isPresent() && !((String) answer.get()).isEmpty()) {
+                    if (answer.isPresent() &&
+                        !((String) answer.get()).isEmpty()
+                        ) {
 
                         logger.setHostAlias(host, (String) answer.get());
 
@@ -201,12 +204,73 @@ public class PaneCreator {
         userInput.setWrapText(true);
         userInput.setOnKeyPressed((KeyEvent keyEvent) -> {
             
-            if (keyEvent.getCode() == KeyCode.ENTER)  {
-                
-                keyEvent.consume();
-                send(userInput, chatRoomID, peer);
+            String command;
+
+            switch (keyEvent.getCode()) {
+                /* If the pressed key is "tab", calls the autocompletion method
+                on the parser */
+                case TAB:
+
+                    /* Only if the text begins with the escape character, it 
+                    will be interpreted as a command. */
+                    if (userInput.getText()
+                            .trim().startsWith(
+                                    String.valueOf(Common.escapeChar))
+                        ) {
+
+                        /* Consumes the event, so a tab won't be added to the 
+                        text */
+                        keyEvent.consume();
+                        
+                        if (userInput.getText().length() > 1) {
+                            
+                            command = parser.completeCommand(
+                                                userInput.getText()
+                                                         .trim()
+                                                         .substring(1));
+
+                            if (!command.equalsIgnoreCase(
+                                                    Command.UNKNOWN.name())
+                                ) {
+
+                                /* Completes the command */
+                                userInput.appendText(command);
+                                
+                            }
+                        }
+                    }
+                break;         
+
+                /* If the pressed key is "enter", sends the message */
+                case ENTER:
+
+                    keyEvent.consume();
+                    
+                    /* If the input was a command, tries to execute it */
+                    if (Parser.isCommand(userInput.getText())) {
+                        
+                        /* Executes the given command */
+                        parser.executeCommand(Command.getCommand(
+                                                    userInput.getText()
+                                                             .trim()
+                                                             .substring(1)));
+                    } else {
+                        
+                        if (userInput.getText().trim().startsWith(
+                                    String.valueOf(Common.escapeChar))
+                            ) {
+                                
+                            logger.logMsg("Unknown command.\n");
+                            logger.logError("Unknown command.\n");
+                        } else {
+                            
+                            send(userInput, chatRoomID, peer);
+                        }
+                    }
+                break;
             }
-        });
+            });
+
         
         msgTextArea.setPrefHeight(200);
         userInput.setPrefHeight(msgTextArea.getPrefHeight() / 2);
@@ -218,28 +282,28 @@ public class PaneCreator {
         sendButton.setText(resourceBundle.getString("button_send"));
         
         sendButton.setOnAction(e -> {
-            
-            e.consume();
-            send(userInput, chatRoomID, peer);
-        });
+
+                e.consume();
+                send(userInput, chatRoomID, peer);
+            });
         /* Disconnect button */
         Button disconnectButton = new Button();
         disconnectButton.setText(resourceBundle.getString("button_disconnect"));
         /* Action for the disconnection button */
         disconnectButton.setOnAction(e -> {
             
-            e.consume();
-            peer.leaveChatRoom(chatRoomID);
-            
-            /* Shows a little message and leaves the tab open */
-            logger.logMsg("\n---------------------\n"
-                        + "Disconnected from room."
-                        + "\n---------------------\n", chatRoomID);
-            
-            /* Changes the state of the text areas */
-            userInput.setEditable(false);
-            userInput.setDisable(true);
-        });
+                e.consume();
+                peer.leaveChatRoom(chatRoomID);
+
+                /* Shows a little message and leaves the tab open */
+                logger.logMsg("\n---------------------\n"
+                            + "Disconnected from room."
+                            + "\n---------------------\n", chatRoomID);
+
+                /* Changes the state of the text areas */
+                userInput.setEditable(false);
+                userInput.setDisable(true);
+            });
         
         /* Adds a scroll bar for the msgTextArea */
         ScrollPane msgScroll = new ScrollPane(msgTextArea);
@@ -250,10 +314,9 @@ public class PaneCreator {
          /* Adds a listener so the scroll bar can go to the 
         bottom automatically */
         msgTextArea.heightProperty().addListener(observable -> {
-            
-            chatPane.layout();
-            msgScroll.setVvalue(msgScroll.getVmax());
-        });
+                chatPane.layout();
+                msgScroll.setVvalue(msgScroll.getVmax());
+            });
         
         optionsPane.setAlignment(Pos.BASELINE_RIGHT);
         optionsPane.getChildren().addAll(disconnectButton, sendButton);

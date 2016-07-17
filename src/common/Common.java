@@ -1,5 +1,6 @@
 package common;
 
+import commands.Parser;
 import control.ConnectionObserver;
 import control.ControlMessage;
 import gui.PeerGUI;
@@ -63,6 +64,17 @@ public class Common {
      * accepted.
      */
     public static ConnectionObserver connectionObserver = new ConnectionObserver();
+    
+    /**
+     * Parser to translate and execute the supported commands.
+     */
+    public static Parser parser = new Parser ();
+    
+    /**
+     * Escape character for the commands. If a string begins with this 
+     * character, it will be parsed as a command.
+     */
+    public static char escapeChar = '/';
 
 /* ----------------- */
 /* ---- METHODS ---- */

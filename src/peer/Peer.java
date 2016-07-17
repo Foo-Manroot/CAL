@@ -317,7 +317,7 @@ public class Peer {
         retVal = host.send(packet, expectedAnswer, this, 4);
         
         /* Removes the notification from the list */
-//        server.removeNotification(expectedAnswer);
+        server.removeNotification(expectedAnswer);
         
         return retVal;
     }
