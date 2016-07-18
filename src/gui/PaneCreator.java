@@ -39,20 +39,20 @@ import peer.Peer;
  * the chat room.
  */
 public class PaneCreator {
-    
+
     /**
-     * Generates and adds the text to the given TextFlow. Also, adds the 
+     * Generates and adds the text to the given TextFlow. Also, adds the
      * necessary items, like a context menu.
-     * 
+     *
      * @param outArea
      *              Text area where the new text will be added.
-     * 
+     *
      * @param host
      *              Host that sent the message.
-     * 
+     *
      * @param msg
      *              The received message.
-     * 
+     *
      * @param hostName
      *              The text area where the host's name will be shown.
      */
@@ -60,13 +60,13 @@ public class PaneCreator {
                                 Host host,
                                 String msg,
                                 Text hostName) {
-        
+
         /* Notifies the GUI thread to add the text */
         Platform.runLater(() -> {
 
             Color colour;
-        
-            /* Adds a context menu so a new connection can be 
+
+            /* Adds a context menu so a new connection can be
             done with the selected host */
             MenuItem connectMenu = new MenuItem(
                     ResourceBundle.getBundle(Common.resourceBundle)
@@ -88,7 +88,7 @@ public class PaneCreator {
                         alert.show();
                     }
                 });
-            
+
             /* Adds another menu item to set the host alias */
             MenuItem aliasMenu = new MenuItem(
                     ResourceBundle.getBundle(Common.resourceBundle)
@@ -107,7 +107,7 @@ public class PaneCreator {
 
                     answer = dialog.showAndWait();
 
-                    /* Gets the new value and adds it to the list (only if any 
+                    /* Gets the new value and adds it to the list (only if any
                     value has been submitted) */
                     if (answer.isPresent() &&
                         !((String) answer.get()).isEmpty()
@@ -118,9 +118,9 @@ public class PaneCreator {
                         hostName.setText((String) answer.get() + ":\n\t");
                     }
                 });
-            
-            ContextMenu context = (Common.isLocalPeer(host))? 
-                                        new ContextMenu(aliasMenu) 
+
+            ContextMenu context = (Common.isLocalPeer(host))?
+                                        new ContextMenu(aliasMenu)
                                       : new ContextMenu(aliasMenu, connectMenu);
             Text text;
 
@@ -128,7 +128,7 @@ public class PaneCreator {
 
             /* Adds the host name (if needed) and its context menu */
             if (!hostName.getText().isEmpty()) {
-            
+
                 hostName.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
 
                     if (e.getButton() == MouseButton.SECONDARY) {
@@ -136,11 +136,11 @@ public class PaneCreator {
                         context.show(hostName, e.getScreenX(), e.getScreenY());
                     }
                 });
-                
+
                 hostName.setFill(colour);
                 outArea.getChildren().add(hostName);
             }
-            
+
             /* Adds the message */
             text = new Text(msg);
 
@@ -157,53 +157,53 @@ public class PaneCreator {
             outArea.getChildren().add(text);
         });
     }
-    
-    
+
+
     /**
-     * Creates and returns a pane with all the elements for the new chat room 
+     * Creates and returns a pane with all the elements for the new chat room
      * tab.
-     * 
+     *
      * <p>
-     * Also sets the ID's for the main pane (<i>chatRoom</i> + chat room ID); 
+     * Also sets the ID's for the main pane (<i>chatRoom</i> + chat room ID);
      * and adds the messages text area to the logger's list.
-     * 
-     * @param chatRoomID 
+     *
+     * @param chatRoomID
      *              ID of the room for which this pane is being created.
-     * 
-     * @param resourceBundle 
+     *
+     * @param resourceBundle
      *              Resources to set the language of the components.
-     * 
-     * @param peer 
+     *
+     * @param peer
      *              The peer for which this pane is being created.
-     * 
-     * 
-     * @return 
+     *
+     *
+     * @return
      *              A pane with all the necessary elements for the tab.
      */
     public static Pane roomsTabPane (byte chatRoomID,
                                      ResourceBundle resourceBundle,
                                      Peer peer) {
-        
+
         VBox chatPane = new VBox(); /* Pane for the chat itself */
 //        VBox roomOptionsPane = new VBox(); /* Pane for the extra options */
 //        HBox mainPane = new HBox(); /* Pane to contain the others */
-        
+
         chatPane.setAlignment(Pos.CENTER);
-        
+
     /* Chat pane */
-        /* Adds three main elements: 
+        /* Adds three main elements:
             the message text area (where the messages will be displayed),
             the user input text area (where the user will type the message)
-            and the bottom pane, with all the buttons for the conversation 
+            and the bottom pane, with all the buttons for the conversation
             (send, disconnect...).
         */
         TextFlow msgTextArea = new TextFlow();
         msgTextArea.setId("msgTextArea" + chatRoomID);
-        
+
         TextArea userInput = new TextArea();
         userInput.setWrapText(true);
         userInput.setOnKeyPressed((KeyEvent keyEvent) -> {
-            
+
             String command;
 
             switch (keyEvent.getCode()) {
@@ -211,19 +211,24 @@ public class PaneCreator {
                 on the parser */
                 case TAB:
 
-                    /* Only if the text begins with the escape character, it 
+                    if (userInput.getText() == null) {
+
+                        break;
+                    }
+
+                    /* Only if the text begins with the escape character, it
                     will be interpreted as a command. */
                     if (userInput.getText()
                             .trim().startsWith(
                                     String.valueOf(Common.escapeChar))
                         ) {
 
-                        /* Consumes the event, so a tab won't be added to the 
+                        /* Consumes the event, so a tab won't be added to the
                         text */
                         keyEvent.consume();
-                        
+
                         if (userInput.getText().length() > 1) {
-                            
+
                             command = parser.completeCommand(
                                                 userInput.getText()
                                                          .trim()
@@ -235,35 +240,37 @@ public class PaneCreator {
 
                                 /* Completes the command */
                                 userInput.appendText(command);
-                                
+
                             }
                         }
                     }
-                break;         
+                break;
 
                 /* If the pressed key is "enter", sends the message */
                 case ENTER:
 
                     keyEvent.consume();
-                    
+
                     /* If the input was a command, tries to execute it */
-                    if (Parser.isCommand(userInput.getText())) {
-                        
+                    if (Parser.isCommand (userInput.getText())) {
+
                         /* Executes the given command */
                         parser.executeCommand(Command.getCommand(
                                                     userInput.getText()
                                                              .trim()
                                                              .substring(1)));
+                        userInput.setText(null);
                     } else {
-                        
+
                         if (userInput.getText().trim().startsWith(
                                     String.valueOf(Common.escapeChar))
                             ) {
-                                
+
                             logger.logMsg("Unknown command.\n");
                             logger.logError("Unknown command.\n");
+                            userInput.setText(null);
                         } else {
-                            
+
                             send(userInput, chatRoomID, peer);
                         }
                     }
@@ -271,16 +278,16 @@ public class PaneCreator {
             }
             });
 
-        
+
         msgTextArea.setPrefHeight(200);
         userInput.setPrefHeight(msgTextArea.getPrefHeight() / 2);
-        
+
         /* Pane with the buttons */
         HBox optionsPane = new HBox();
         /* Send button */
         Button sendButton = new Button();
         sendButton.setText(resourceBundle.getString("button_send"));
-        
+
         sendButton.setOnAction(e -> {
 
                 e.consume();
@@ -291,7 +298,7 @@ public class PaneCreator {
         disconnectButton.setText(resourceBundle.getString("button_disconnect"));
         /* Action for the disconnection button */
         disconnectButton.setOnAction(e -> {
-            
+
                 e.consume();
                 peer.leaveChatRoom(chatRoomID);
 
@@ -304,62 +311,62 @@ public class PaneCreator {
                 userInput.setEditable(false);
                 userInput.setDisable(true);
             });
-        
+
         /* Adds a scroll bar for the msgTextArea */
         ScrollPane msgScroll = new ScrollPane(msgTextArea);
         msgScroll.setPrefSize(msgTextArea.getPrefWidth(),
                               msgTextArea.getPrefHeight());
         msgScroll.setFitToWidth(true);
-        
-         /* Adds a listener so the scroll bar can go to the 
+
+         /* Adds a listener so the scroll bar can go to the
         bottom automatically */
         msgTextArea.heightProperty().addListener(observable -> {
                 chatPane.layout();
                 msgScroll.setVvalue(msgScroll.getVmax());
             });
-        
+
         optionsPane.setAlignment(Pos.BASELINE_RIGHT);
         optionsPane.getChildren().addAll(disconnectButton, sendButton);
-        
+
         /* Adds the elements to the pane */
         chatPane.getChildren().addAll(msgScroll, userInput, optionsPane);
-        
+
         logger.addTextArea(msgTextArea, 2);
-        
+
     /* Options pane */
         /* Adds a TextFlow to show the information about the connected hosts */
 //        TextFlow connectedHosts = new TextFlow();
-        
+
     /* Main pane */
         /* Adds all the secondary panes */
-        
+
         return chatPane;
     }
-    
+
     /**
      * Sends the message to the rest of the peers on the same room.
-     * 
-     * @param userInput 
+     *
+     * @param userInput
      *              TextArea where the message has been written.
-     * 
-     * @param chatRoom 
+     *
+     * @param chatRoom
      *              ID of the chat room where the message will be sent.
      */
     private static void send (TextArea userInput, byte chatRoom, Peer peer) {
-        
+
         String message = (userInput.getText() == null)? "" : userInput.getText();
-        
+
         Host aux = new Host(Common.getInterfaces().get(0),
                             peer.getServer().getSocket().getLocalPort(),
                             chatRoom);
-        
+
         logger.logMsg(message + "\r\n", aux, true);
-        
+
         if (!peer.sendMessage(message, chatRoom).isEmpty()) {
-            
+
             logger.logWarning("Some peers may have not received the message.\n");
         }
-        
+
         userInput.setText(null);
     }
 }

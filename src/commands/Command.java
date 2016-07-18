@@ -10,18 +10,56 @@ package commands;
  */
 public enum Command {
     
-    HELP,
-    UNKNOWN;
+    /**
+     * Prints a little help on the screen.
+     */
+    HELP ("Prints a little help message on the screen and exits."),
+    
+    /**
+     * Shows a list with all the hosts currently on the room.
+     */
+    HOSTS ("Shows a list with all the hosts currently on the room."),
+    
+    
+    UNKNOWN ("Unknown command.");
+    
+/* ------------------------------------------ */
+/* ---- END OF ENUM ELEMENTS DECLARATION ---- */
+/* ------------------------------------------ */
+
+    private final String description;
     
 /* ----------------- */    
 /* ---- METHODS ---- */
 /* ----------------- */ 
+    
+    /**
+     * Constructor.
+     * 
+     * @param description
+     *              A description for the command to show when needed.
+     */
+    private Command (String description) {
+        
+        this.description = description;
+    }
+    
+    /**
+     * Returns the available description to get information about the command.
+     * 
+     * @return 
+     *              The value of {@code description}
+     */
+    public String getDescription () {
+        
+        return description;
+    }
 
     /**
      *  Returns the value that corresponds with the given string. 
      * 
      * <p>
-     * Case insensitive.
+     * Case <b>insensitive.</b>
      * 
      * 
      * @param value
