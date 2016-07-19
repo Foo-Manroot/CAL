@@ -45,6 +45,11 @@ public class FXMLPeerController implements Initializable {
     
     private ResourceBundle resourceBundle;
     
+    /**
+     * Current locale of the text.
+     */
+    public static Locale currentLocale;
+    
 /* -------------------------------------- */
 /* ---- END OF ATTRIBUTE DECLARATION ---- */
 /* -------------------------------------- */
@@ -226,7 +231,7 @@ public class FXMLPeerController implements Initializable {
      */
     private Pane newRoomPane (byte chatRoomID) {
         
-        return PaneCreator.roomsTabPane(chatRoomID, resourceBundle, peer);
+        return PaneCreator.roomsTabPane(chatRoomID, peer);
     }
     
     /**
@@ -270,6 +275,9 @@ public class FXMLPeerController implements Initializable {
                     aux.getSelectionModel().select(selectedIndex);
                 }
             }
+            
+            /* Updates the current locale */
+            currentLocale = locale;
                     
         } catch (IOException ex) {
             
@@ -310,6 +318,8 @@ public class FXMLPeerController implements Initializable {
         });
         
         Common.connectionObserver.addViewController(this);
+        
+        currentLocale = resourceBundle.getLocale();
     }   
     
 }

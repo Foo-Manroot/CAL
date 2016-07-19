@@ -16,8 +16,7 @@ import peer.Host;
  * This class implements some methods to support the execution of some commands.
  */
 public class Parser {
-
-
+    
     /**
      * Tries to determine if the given string can be a bit of any known command,
      * even if the exact one is unknown.
@@ -78,7 +77,7 @@ public class Parser {
      *          Every returned string is in <b>LOWERCASE LETTERS</b>.
      */
     public String completeCommand (String portion) {
-
+        
         ArrayList<Command> possibilities = new ArrayList<>();
         Command completed;
 
