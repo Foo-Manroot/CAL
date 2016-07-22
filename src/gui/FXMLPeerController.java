@@ -182,15 +182,24 @@ public class FXMLPeerController implements Initializable {
         /* Sets a handler for a closure request */
         newTab.setOnCloseRequest(e -> {
 
-            if (peer.leaveChatRoom(chatRoomID)) {
+                if (peer.leaveChatRoom(chatRoomID)) {
 
-                logger.logWarning("Disconnected correctly.\n");
-            } else {
+                    logger.logWarning("Disconnected correctly.\n");
+                } else {
 
-                logger.logWarning("Some peers may have not received the "
-                                  + "disconnection message.\n");
-            }
-        });
+                    logger.logWarning("Some peers may have not received the "
+                                      + "disconnection message.\n");
+                }
+            });
+        
+        newTab.setOnSelectionChanged(e -> {
+        
+                /* When this tab is selected, sets the variable "currentRoom" */
+                if (newTab.isSelected()) {
+
+                    Common.currentRoom = chatRoomID;
+                }
+            });
 
         /* If a tab for the given connection already exists, exits */
         for (Tab tab : roomsTabPane.getTabs()) {
@@ -207,7 +216,8 @@ public class FXMLPeerController implements Initializable {
         /* Adds the new tab and selects it */
         roomsTabPane.getTabs().add(newTabPos, newTab);
         roomsTabPane.getSelectionModel().select(newTab);
-
+        Common.currentRoom = chatRoomID;
+        
         /* Adds a new alias for the local peer */
         for (InetAddress addr : Common.getInterfaces()) {
 

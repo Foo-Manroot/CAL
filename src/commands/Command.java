@@ -9,38 +9,54 @@ package commands;
  * Enumeration of all the supported commands.
  */
 public enum Command {
-    
+
     /**
+     * Prints a little help on the screen.
+     *//**
      * Prints a little help on the screen.
      */
     HELP ("Prints a little help message on the screen and exits."),
+
+    /**
+     * Shows a list with all the hosts currently on the room (or in every room,
+     * depending on the given arguments).
+     */
+    HOSTS ("Shows a list with information about the hosts. If no parameters "
+            + "are given, it shows only information about the hosts on the "
+            + "current room. To show all the rooms, the parameter \"all\" "
+            + "must be added."),
+
+    /**
+     * Closes all the active connections with the peers on this room.
+     */
+    LEAVE ("Leaves the current chat room."),
     
     /**
-     * Shows a list with all the hosts currently on the room.
+     * Closes all active connections with every peer.
      */
-    HOSTS ("Shows a list with all the hosts currently on the room."),
-    
-    
+    EXIT ("Disconnects the user from all the rooms."),
+
+
     UNKNOWN ("Unknown command.");
-    
+
 /* ------------------------------------------ */
 /* ---- END OF ENUM ELEMENTS DECLARATION ---- */
 /* ------------------------------------------ */
 
     private final String description;
-    
-/* ----------------- */    
+
+/* ----------------- */
 /* ---- METHODS ---- */
-/* ----------------- */ 
-    
+/* ----------------- */
+
     /**
      * Constructor.
-     * 
+     *
      * @param description
      *              A description for the command to show when needed.
      */
     private Command (String description) {
-        
+
         this.description = description;
     }
     

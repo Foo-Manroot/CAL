@@ -49,7 +49,11 @@ public class Common {
      * Object used to log events.
      */
     public static Logger logger = Logger.newLogger();
-
+    
+    /**
+     * Current room of
+     */
+    public static byte currentRoom = RESERVED_DATA_FLOW;
 
 /* GUI-RELATED ATTRIBUTES */
     /**

@@ -55,6 +55,61 @@ public class Parser {
 
         return false;
     }
+    
+    /**
+     * Prints a list with all the known hosts.
+     */
+    public static void showHostsList () {
+        
+        StringBuilder message = new StringBuilder();
+        ArrayList<Host>  aux;
+        
+        message.append("\n-------------------------");
+        message.append("\nAll hosts by room: \n");
+        
+        /* Goes through all the rooms, printing all the hosts in each one */
+        for (byte room = Byte.MIN_VALUE; room < Byte.MAX_VALUE; room++) {
+            
+            aux = peer.getHostsList().search(room);
+            
+            if (!aux.isEmpty()) {
+                
+                message.append("\n->Hosts on room ")
+                        .append(room)
+                        .append(": \n");
+                
+                /* Prints all the hosts on the room */
+                for (Host h : aux) {
+                    
+                    message.append("·")
+                            .append(h.toString());
+                }
+            }
+        }
+        
+        /* Does the same with the only left value (omitted on the loop to avoid
+        overflow and, therefore, an infinite loop) */
+        aux = peer.getHostsList().search(Byte.MAX_VALUE);
+            
+        if (!aux.isEmpty()) {
+
+            message.append("\n->Hosts on room ")
+                    .append(Byte.MAX_VALUE)
+                    .append(": \n");
+
+            /* Prints all the hosts on the room */
+            for (Host h : aux) {
+
+                message.append("·")
+                        .append(h.toString());
+            }
+        }
+        
+        message.append("-------------------------\n");
+        
+        /* Prints the message */
+        logger.logMsg(new String (message));
+    }
 
 /* ------------------------------- */
 /* ---- END OF STATIC METHODS ---- */
@@ -120,6 +175,8 @@ public class Parser {
      */
     public boolean executeCommand (Command command) {
 
+        byte chatRoom = Common.currentRoom;
+        
         if (command.equals(Command.UNKNOWN)) {
             
             return false;
@@ -131,13 +188,20 @@ public class Parser {
 
             case HELP:
 
-                printHelp();
+                HELP ();
                 return true;
 
             case HOSTS:
                 
-                printHosts();
+                HOSTS (chatRoom);
                 return true;
+                
+            case LEAVE:
+                
+                return LEAVE (chatRoom);
+                
+            case EXIT:
+                return EXIT ();
 
             default:
                 return false;
@@ -146,44 +210,22 @@ public class Parser {
     
     /**
      * Prints a list with all the known hosts on the room.
+     * 
+     * @param chatRoom
+     *              The id of the chat room to show.
      */
-    private void printHosts () {
+    private void HOSTS (byte chatRoom) {
         
         StringBuilder message = new StringBuilder();
-        ArrayList<Host>  aux;
-        
-        message.append("\n-------------------------");
-        message.append("\nAll hosts by room: \n");
-        
-        /* Goes through all the rooms, printing all the hosts in each one */
-        for (byte room = Byte.MIN_VALUE; room < Byte.MAX_VALUE; room++) {
+        ArrayList<Host> aux = peer.getHostsList().search(chatRoom);
             
-            aux = peer.getHostsList().search(room);
-            
-            if (!aux.isEmpty()) {
-                
-                message.append("\n->Hosts on room ")
-                        .append(room)
-                        .append(": \n");
-                
-                /* Prints all the hosts on the room */
-                for (Host h : aux) {
-                    
-                    message.append("·")
-                            .append(h.toString());
-                }
-            }
-        }
+        message.append("-------------------------\n");
         
-        /* Does the same with the only left value (omitted on the loop to avoid
-        overflow and, therefore, an infinite loop) */
-        aux = peer.getHostsList().search(Byte.MAX_VALUE);
-            
         if (!aux.isEmpty()) {
 
-            message.append("\n->Hosts on room ")
-                    .append(Byte.MAX_VALUE)
-                    .append(": \n");
+            message.append("\n-Hosts on current room (")
+                    .append(chatRoom)
+                    .append("): \n");
 
             /* Prints all the hosts on the room */
             for (Host h : aux) {
@@ -196,13 +238,13 @@ public class Parser {
         message.append("-------------------------\n");
         
         /* Prints the message */
-        logger.logMsg(new String (message));
+        logger.logMsg(new String (message), chatRoom);
     }
     
     /**
      * Prints a list with all the available commands.
      */
-    private void printHelp () {
+    private void HELP () {
         
         StringBuilder message = new StringBuilder();
         
@@ -235,5 +277,28 @@ public class Parser {
         
         /* Prints the message */
         logger.logMsg(new String (message));
+    }
+    
+    /**
+     * Closes all active connections with every peer.
+     */
+    private boolean EXIT () {
+        
+        logger.logMsg("Exiting all rooms...\n");
+        
+        return peer.disconnect();
+    }
+    
+    /**
+     * Closes all the active connections with the peers on this room.
+     * 
+     * @param chatRoom 
+     *              The ID of the room to leave.
+     */
+    private boolean LEAVE (byte chatRoom) {
+        
+        logger.logMsg("Leaving the room...\n");
+
+        return peer.leaveChatRoom(chatRoom);
     }
 }
