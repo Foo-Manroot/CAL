@@ -41,7 +41,7 @@ import peer.Peer;
  * the chat room.
  */
 public class PaneCreator {
-    
+
     /**
      * Number of times that the "tab" key has been pressed.
      */
@@ -76,9 +76,9 @@ public class PaneCreator {
             /* Adds a context menu so a new connection can be
             done with the selected host */
             MenuItem connectMenu = new MenuItem();
-            
+
             connectMenu.setOnAction(e -> {
-                
+
                     ResourceBundle aux = ResourceBundle.getBundle(resourceBundle,
                                                                   currentLocale);
                     Alert alert = new Alert (Alert.AlertType.ERROR);
@@ -133,14 +133,14 @@ public class PaneCreator {
                 hostName.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
 
                     ResourceBundle aux;
-                    
+
                     if (e.getButton() == MouseButton.SECONDARY) {
 
                         aux = ResourceBundle.getBundle(resourceBundle,
                                                        currentLocale);
-                        
+
                         context.show(hostName, e.getScreenX(), e.getScreenY());
-                        
+
                         connectMenu.setText(aux.getString("private_conv_menu"));
                         aliasMenu.setText(aux.getString("chng_alias_menu"));
                     }
@@ -208,7 +208,7 @@ public class PaneCreator {
         msgTextArea.setId("msgTextArea" + chatRoomID);
 
         TextArea userInput = userInputArea(chatRoomID, peer);
-        
+
         msgTextArea.setPrefHeight(200);
         userInput.setPrefHeight(msgTextArea.getPrefHeight() / 2);
 
@@ -216,20 +216,22 @@ public class PaneCreator {
         HBox optionsPane = new HBox();
         /* Send button */
         Button sendButton = new Button();
-        
+
         sendButton.setText(aux.getString("button_send"));
-        
+        sendButton.setId("button_send" + chatRoomID);
+
         sendButton.setOnAction(e -> {
 
                 e.consume();
                 send(userInput, chatRoomID, peer);
             });
-        
+
         /* Disconnect button */
         Button disconnectButton = new Button();
-        
+
         disconnectButton.setText(aux.getString("button_disconnect"));
-        
+        disconnectButton.setId("button_disconnect" + chatRoomID);
+
         /* Action for the disconnection button */
         disconnectButton.setOnAction(e -> {
 
@@ -248,16 +250,16 @@ public class PaneCreator {
 
         /* Adds a scroll bar for the msgTextArea */
         ScrollPane msgScroll = new ScrollPane(msgTextArea);
-        
+
         msgScroll.setPrefSize(msgTextArea.getPrefWidth(),
                               msgTextArea.getPrefHeight());
-        
+
         msgScroll.setFitToWidth(true);
 
          /* Adds a listener so the scroll bar can go to the
         bottom automatically */
         msgTextArea.heightProperty().addListener(observable -> {
-            
+
                 chatPane.layout();
                 msgScroll.setVvalue(msgScroll.getVmax());
             });
@@ -270,6 +272,10 @@ public class PaneCreator {
 
         logger.addTextArea(msgTextArea, 2);
 
+        /* Adds the necessary labeled nodes to the observer's list */
+        Common.langObserver.addNode(sendButton);
+        Common.langObserver.addNode(disconnectButton);
+
     /* Options pane */
         /* Adds a TextFlow to show the information about the connected hosts */
 //        TextFlow connectedHosts = new TextFlow();
@@ -279,21 +285,21 @@ public class PaneCreator {
 
         return chatPane;
     }
-    
+
     /**
      * Creates the text area for the user input.
      */
     private static TextArea userInputArea (byte chatRoomID, Peer peer) {
-        
+
         TextArea userInput = new TextArea();
         userInput.setWrapText(true);
-        
+
         userInput.setOnKeyPressed((KeyEvent keyEvent) -> {
 
             String command;
 
                 switch (keyEvent.getCode()) {
-                    /* If the pressed key is "tab", calls the autocompletion 
+                    /* If the pressed key is "tab", calls the autocompletion
                     method on the parser */
                     case TAB:
 
@@ -309,7 +315,7 @@ public class PaneCreator {
                                         String.valueOf(Common.escapeChar))
                             ) {
 
-                            /* Consumes the event, so a tab won't be added to 
+                            /* Consumes the event, so a tab won't be added to
                             the text */
                             keyEvent.consume();
 
@@ -363,7 +369,7 @@ public class PaneCreator {
                         break;
                 }
             });
-        
+
         return userInput;
     }
 
@@ -378,7 +384,7 @@ public class PaneCreator {
      */
     private static void send (TextArea userInput, byte chatRoom, Peer peer) {
 
-        String message = (userInput.getText() == null)? 
+        String message = (userInput.getText() == null)?
                                     ""
                                   : userInput.getText();
 

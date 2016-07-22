@@ -11,8 +11,6 @@ import common.Common;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -145,7 +143,8 @@ public class PeerGUI extends Application {
         
         } catch (IOException ex) {
             
-            Logger.getLogger(PeerGUI.class.getName()).log(Level.SEVERE, null, ex);
+            logger.logError("IOException at PeerGUI.loadView(): "
+                            + ex.getMessage());
         }        
     }
 

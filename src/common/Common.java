@@ -3,6 +3,7 @@ package common;
 import commands.Parser;
 import control.ConnectionObserver;
 import control.ControlMessage;
+import gui.LangChangeObserver;
 import gui.PeerGUI;
 import java.io.EOFException;
 import java.io.File;
@@ -49,6 +50,8 @@ public class Common {
      */
     public static Logger logger = Logger.newLogger();
 
+
+/* GUI-RELATED ATTRIBUTES */
     /**
      * Name of the packet with the strings on different languages.
      */
@@ -64,26 +67,31 @@ public class Common {
      * accepted.
      */
     public static ConnectionObserver connectionObserver = new ConnectionObserver();
-    
+
     /**
      * Parser to translate and execute the supported commands.
      */
     public static Parser parser = new Parser ();
-    
+
     /**
-     * Escape character for the commands. If a string begins with this 
+     * Escape character for the commands. If a string begins with this
      * character, it will be parsed as a command.
      */
     public static char escapeChar = '/';
 
+    /**
+     * Observer to change the language on the option buttons of the chat panel.
+     */
+    public static LangChangeObserver langObserver = new LangChangeObserver();
+
 /* ----------------- */
 /* ---- METHODS ---- */
 /* ----------------- */
-    
+
     /**
      * Logs the given message.
      *
-     * @param message 
+     * @param message
      *              Message to be logged.
      *
      * @deprecated
@@ -98,10 +106,10 @@ public class Common {
     /**
      * Opens a data file an returns its content.
      *
-     * @param path 
+     * @param path
      *              Path to the file.
      *
-     * @return 
+     * @return
      *              The content of the file on a new object. If the file didn't
      *          exists or no objects are stored there, an empty {@link ArrayList} is
      *          returned.
@@ -130,7 +138,7 @@ public class Common {
             }
 
         } catch (EOFException ex) {
-            /* Exception thrown while reading at the end of the file. This is 
+            /* Exception thrown while reading at the end of the file. This is
              done to check wether all objects where read or not. */
         } catch (IOException | ClassNotFoundException ex) {
 
@@ -152,7 +160,7 @@ public class Common {
      * @param content
      *              Object to be stored
      *
-     * @param append 
+     * @param append
      *              If this parameter is <i>true</i>, the given content will be
      *          appended to the previous one of the file (if any). If it's
      *          <i>false</i>, the content will be overridden.
@@ -175,7 +183,7 @@ public class Common {
         if (append &&
             f.exists() &&
             f.isFile()) {
-            
+
             previousContent = openDatFile(path);
         }
 
@@ -212,11 +220,11 @@ public class Common {
      * array with 4 positions. On the first one ({@code array[0]}) will be the
      * highest byte of the integer.
      *
-     * @param port 
+     * @param port
      *              Port number to be converted.
      *
      *
-     * @return 
+     * @return
      *              A byte array with the highest part of the number on
      *          {@code array[0]}.
      */
@@ -235,12 +243,12 @@ public class Common {
      * Converts the given number (stored in the array of 4 bytes) into an
      * integer. On {@code array[0]} will be the highest byte of the integer.
      *
-     * @param array 
+     * @param array
      *              A byte array with the highest part of the number on
      *          {@code array[0]}.
      *
      *
-     * @return 
+     * @return
      *              An integer whose value equals the one stored on the array.
      */
     public static int arrayToInt(byte[] array) {
@@ -267,46 +275,46 @@ public class Common {
 
         return port;
     }
-    
+
     /**
      * Checks whether the given host is the same as the local peer (the static
      * attribute {@code peer} on {@link PeerGUI}).
-     * 
-     * 
-     * @param host 
+     *
+     *
+     * @param host
      *              The host to be checked.
-     * 
-     * 
-     * @return 
-     *              <i>true</i> if the IP address and the port matches; 
+     *
+     *
+     * @return
+     *              <i>true</i> if the IP address and the port matches;
      *          <i>false</i> otherwise.
      */
     public static boolean isLocalPeer (Host host) {
-        
+
         return (
                 getInterfaces().contains(host.getIPaddress()) &&
                 host.getPort() == PeerGUI.peer.getServer().getSocket().getLocalPort()
                 );
     }
-    
+
     /**
      * Gets the addresses of all the active interfaces.
-     * 
-     * @return 
+     *
+     * @return
      *              A list with all the addresses of the active interfaces.
      */
     public static ArrayList<InetAddress> getInterfaces() {
 
         ArrayList<InetAddress> addresses = new ArrayList<>();
-        
+
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-            
+
             /* Adds the wildcard address -> 0.0.0.0 */
             addresses.add(new InetSocketAddress(0).getAddress());
-                
+
             while (interfaces.hasMoreElements()) {
-                
+
                 NetworkInterface iface = interfaces.nextElement();
                 /* The inactive interfaces are omitted */
                 if (!iface.isUp()) {
@@ -319,11 +327,11 @@ public class Common {
                 }
             }
         } catch (SocketException ex) {
-            
+
             logger.logError("Exception at Common.getInterfaces(): "
                             + ex.getMessage());
         }
-        
+
         return addresses;
-    }    
+    }
 }

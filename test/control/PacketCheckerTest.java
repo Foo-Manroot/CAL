@@ -13,7 +13,6 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author Miguel
  */
 public class PacketCheckerTest {
     
