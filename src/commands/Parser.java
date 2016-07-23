@@ -182,7 +182,7 @@ public class Parser {
             return false;
         }
         
-        Common.logger.logWarning("Command executed: " + command.name() + "\n");
+        logger.logWarning("Command executed: " + command.name() + "\n");
 
         switch (command) {
 

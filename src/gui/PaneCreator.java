@@ -288,6 +288,10 @@ public class PaneCreator {
 
     /**
      * Creates the text area for the user input.
+     * 
+     * <p>
+     * This method also creates a handler for the user input, so different 
+     * actions (as executing commands) can be performed.
      */
     private static TextArea userInputArea (byte chatRoomID, Peer peer) {
 
@@ -342,6 +346,24 @@ public class PaneCreator {
 
                         keyEvent.consume();
 
+                        /* Special case: if the command is "HOSTS" and has 
+                        one argument ("all"), executes it directly */
+                        if (userInput.getText().equalsIgnoreCase(
+                                Common.escapeChar
+                                + Command.HOSTS.name()
+                                + " all")
+                            ) {
+                            
+                            logger.logWarning("Command executed: "
+                                                + Command.HOSTS.name()
+                                                + " all\n");
+                            
+                            Parser.showHostsList();
+                            userInput.setText(null);
+                            
+                            break;
+                        }
+                        
                         /* If the input was a command, tries to execute it */
                         if (Parser.isCommand (userInput.getText())) {
 
@@ -372,7 +394,7 @@ public class PaneCreator {
 
         return userInput;
     }
-
+    
     /**
      * Sends the message to the rest of the peers on the same room.
      *
