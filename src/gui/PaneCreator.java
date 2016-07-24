@@ -318,7 +318,7 @@ public class PaneCreator {
                                 .trim().startsWith(
                                         String.valueOf(Common.escapeChar))
                             ) {
-
+                            
                             /* Consumes the event, so a tab won't be added to
                             the text */
                             keyEvent.consume();

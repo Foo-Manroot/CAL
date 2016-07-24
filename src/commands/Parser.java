@@ -16,7 +16,18 @@ import peer.Host;
  * This class implements some methods to support the execution of some commands.
  */
 public class Parser {
-    
+
+    /**
+     * Number of times that the "tab" key has been pressed without a correctly
+     * guessed command to be completed. That means that more (of none) commands
+     * fits the starting portion of text.
+     *
+     * <p>
+     * If this counter reaches 2, the method {@code Parser.completeCommand()}
+     * should show a list with all the possible commands, if necessary.
+     */
+    private int tabsCount = 0;
+
     /**
      * Tries to determine if the given string can be a bit of any known command,
      * even if the exact one is unknown.
@@ -55,42 +66,42 @@ public class Parser {
 
         return false;
     }
-    
+
     /**
      * Prints a list with all the known hosts.
      */
     public static void showHostsList () {
-        
+
         StringBuilder message = new StringBuilder();
         ArrayList<Host>  aux;
-        
+
         message.append("\n-------------------------");
         message.append("\nAll hosts by room: \n");
-        
+
         /* Goes through all the rooms, printing all the hosts in each one */
         for (byte room = Byte.MIN_VALUE; room < Byte.MAX_VALUE; room++) {
-            
+
             aux = peer.getHostsList().search(room);
-            
+
             if (!aux.isEmpty()) {
-                
+
                 message.append("\n->Hosts on room ")
                         .append(room)
                         .append(": \n");
-                
+
                 /* Prints all the hosts on the room */
                 for (Host h : aux) {
-                    
+
                     message.append("·")
                             .append(h.toString());
                 }
             }
         }
-        
+
         /* Does the same with the only left value (omitted on the loop to avoid
         overflow and, therefore, an infinite loop) */
         aux = peer.getHostsList().search(Byte.MAX_VALUE);
-            
+
         if (!aux.isEmpty()) {
 
             message.append("\n->Hosts on room ")
@@ -104,9 +115,9 @@ public class Parser {
                         .append(h.toString());
             }
         }
-        
+
         message.append("-------------------------\n");
-        
+
         /* Prints the message */
         logger.logMsg(new String (message));
     }
@@ -132,9 +143,10 @@ public class Parser {
      *          Every returned string is in <b>LOWERCASE LETTERS</b>.
      */
     public String completeCommand (String portion) {
-        
+
         ArrayList<Command> possibilities = new ArrayList<>();
         Command completed;
+        StringBuilder suggestionMsg = new StringBuilder();
 
         /* Gets all the possible values on the complete list of commands */
         for (Command c : Command.values()) {
@@ -153,11 +165,35 @@ public class Parser {
             already introduced string */
             completed = possibilities.get(0);
 
+            /* Resets the counter */
+            tabsCount = 0;
+
             /* Returns only the completed portion */
             return completed.name().substring(
                                             portion.length(),
                                             completed.name().length()
                                             ).toLowerCase();
+        }
+
+        /* If there are more possibilities and the counter has reached the
+        limit, shows the list with all the possibilities */
+        if (possibilities.size() > 1 &&
+            ++tabsCount >= 2) {
+
+            suggestionMsg.append("\n-------------------------\n");
+            
+            suggestionMsg.append("Possible commands: \n");
+            
+            for (Command c : possibilities) {
+                
+                suggestionMsg.append(Common.escapeChar)
+                                .append(c.name().toLowerCase())
+                                .append("\t\t");
+            }
+            
+            suggestionMsg.append("\n-------------------------\n");
+            
+            logger.logMsg(new String (suggestionMsg), Common.currentRoom);
         }
 
         return Command.UNKNOWN.name().toLowerCase();
@@ -176,12 +212,12 @@ public class Parser {
     public boolean executeCommand (Command command) {
 
         byte chatRoom = Common.currentRoom;
-        
+
         if (command.equals(Command.UNKNOWN)) {
-            
+
             return false;
         }
-        
+
         logger.logWarning("Command executed: " + command.name() + "\n");
 
         switch (command) {
@@ -192,14 +228,14 @@ public class Parser {
                 return true;
 
             case HOSTS:
-                
+
                 HOSTS (chatRoom);
                 return true;
-                
+
             case LEAVE:
-                
+
                 return LEAVE (chatRoom);
-                
+
             case EXIT:
                 return EXIT ();
 
@@ -207,20 +243,20 @@ public class Parser {
                 return false;
         }
     }
-    
+
     /**
      * Prints a list with all the known hosts on the room.
-     * 
+     *
      * @param chatRoom
      *              The id of the chat room to show.
      */
     private void HOSTS (byte chatRoom) {
-        
+
         StringBuilder message = new StringBuilder();
         ArrayList<Host> aux = peer.getHostsList().search(chatRoom);
-            
+
         message.append("-------------------------\n");
-        
+
         if (!aux.isEmpty()) {
 
             message.append("\n-Hosts on current room (")
@@ -234,20 +270,20 @@ public class Parser {
                         .append(h.toString());
             }
         }
-        
+
         message.append("-------------------------\n");
-        
+
         /* Prints the message */
         logger.logMsg(new String (message), chatRoom);
     }
-    
+
     /**
      * Prints a list with all the available commands.
      */
     private void HELP () {
-        
+
         StringBuilder message = new StringBuilder();
-        
+
         message.append("\n-------------------------");
         message.append("\nHelp message: ")
                 .append("\n\tTo execute a command, use the escape character, '")
@@ -255,14 +291,14 @@ public class Parser {
                     .append("', and type the desired command. To try to "
                             + "automatically complete the command, use the "
                             + "TAB key.\n");
-        
+
         /* Prints the available commands */
         message.append("\nList of available commands: \n");
-        
+
         for (Command c : Command.values()) {
-            
+
             if (!c.equals(Command.UNKNOWN)) {
-                
+
                 /* Prints the command and its description */
                 message.append("\t")
                         .append(Common.escapeChar)
@@ -272,31 +308,31 @@ public class Parser {
                         .append("\n");
             }
         }
-        
+
         message.append("-------------------------\n");
-        
+
         /* Prints the message */
         logger.logMsg(new String (message));
     }
-    
+
     /**
      * Closes all active connections with every peer.
      */
     private boolean EXIT () {
-        
+
         logger.logMsg("Exiting all rooms...\n");
-        
+
         return peer.disconnect();
     }
-    
+
     /**
      * Closes all the active connections with the peers on this room.
-     * 
-     * @param chatRoom 
+     *
+     * @param chatRoom
      *              The ID of the room to leave.
      */
     private boolean LEAVE (byte chatRoom) {
-        
+
         logger.logMsg("Leaving the room...\n");
 
         return peer.leaveChatRoom(chatRoom);
