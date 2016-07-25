@@ -33,6 +33,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import networking.NetUtils;
 import peer.Host;
 import peer.Peer;
 
@@ -410,7 +411,7 @@ public class PaneCreator {
                                     ""
                                   : userInput.getText();
 
-        Host aux = new Host(Common.getInterfaces().get(0),
+        Host aux = new Host(NetUtils.getInterfaces().get(0),
                             peer.getServer().getSocket().getLocalPort(),
                             chatRoom);
 

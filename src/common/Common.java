@@ -20,6 +20,7 @@ import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import networking.NetUtils;
 import peer.Host;
 
 /**
@@ -296,46 +297,9 @@ public class Common {
     public static boolean isLocalPeer (Host host) {
 
         return (
-                getInterfaces().contains(host.getIPaddress()) &&
+                NetUtils.getInterfaces().contains(host.getIPaddress()) &&
                 host.getPort() == PeerGUI.peer.getServer().getSocket().getLocalPort()
                 );
     }
 
-    /**
-     * Gets the addresses of all the active interfaces.
-     *
-     * @return
-     *              A list with all the addresses of the active interfaces.
-     */
-    public static ArrayList<InetAddress> getInterfaces() {
-
-        ArrayList<InetAddress> addresses = new ArrayList<>();
-
-        try {
-            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-
-            /* Adds the wildcard address -> 0.0.0.0 */
-            addresses.add(new InetSocketAddress(0).getAddress());
-
-            while (interfaces.hasMoreElements()) {
-
-                NetworkInterface iface = interfaces.nextElement();
-                /* The inactive interfaces are omitted */
-                if (!iface.isUp()) {
-                    continue;
-                }
-
-                for (InterfaceAddress addr : iface.getInterfaceAddresses()) {
-
-                    addresses.add(addr.getAddress());
-                }
-            }
-        } catch (SocketException ex) {
-
-            logger.logError("Exception at Common.getInterfaces(): "
-                            + ex.getMessage());
-        }
-
-        return addresses;
-    }
 }

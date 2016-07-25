@@ -27,6 +27,7 @@ import java.io.File;
 import java.net.InetAddress;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import networking.NetUtils;
 
 /**
  *  Controller for {@code FXMLPeer}.
@@ -219,7 +220,7 @@ public class FXMLPeerController implements Initializable {
         Common.currentRoom = chatRoomID;
         
         /* Adds a new alias for the local peer */
-        for (InetAddress addr : Common.getInterfaces()) {
+        for (InetAddress addr : NetUtils.getInterfaces()) {
 
             logger.setHostAlias(new Host (addr,
                                           peer.getServer().getSocket().getLocalPort(),
