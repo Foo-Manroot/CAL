@@ -19,6 +19,6 @@ public class Main {
     public static void main(String[] args) throws Exception {
         
         PeerGUI.main(args);
-//        System.out.println (java.util.Arrays.toString(common.Common.getInterfaces().toArray()));
+//        System.out.println (java.util.Arrays.toString(networking.NetUtils.getInterfaces().toArray()));
     }
 }

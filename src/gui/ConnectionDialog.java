@@ -138,9 +138,29 @@ public class ConnectionDialog {
      */
     private static boolean createHost (String textIP, Spinner port, Spinner chatRoom) {
         
-        /* Regular expression to validate an IPv4 address */
+        /* Regular expression to validate an IPv4 and IPv6 addresses */
         String regexIPv4 = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}"
                          + "([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
+        /* (From David M. Syzdek's answer on 
+        https://stackoverflow.com/questions/53497/regular-expression-that-matches-valid-ipv6-addresses#53500) */
+        String regexIPv6 = "(" +
+                            "([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|" +
+                            "([0-9a-fA-F]{1,4}:){1,7}:|" +
+                            "([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|" +
+                            "([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|" +
+                            "([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|" +
+                            "([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|" +
+                            "([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|" +
+                            "[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|" +
+                            ":((:[0-9a-fA-F]{1,4}){1,7}|:)|" +
+                            "fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|" +
+                            "::(ffff(:0{1,4}){0,1}:){0,1}" +
+                            "((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}" +
+                            "(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|" +
+                            "([0-9a-fA-F]{1,4}:){1,4}:" +
+                            "((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}" +
+                            "(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])" +
+                            ")";
         int index;
         
         int portAux = (int) port.getValue();
@@ -148,25 +168,22 @@ public class ConnectionDialog {
         byte [] IPaddr = new byte [4];
         
         /* Checks the IP text syntax */
-        if (!textIP.matches(regexIPv4) ||
-           (chatRoomAux == Common.RESERVED_DATA_FLOW)) {
+        if (
+            (
+            !textIP.matches(regexIPv4) &&
+            !textIP.matches(regexIPv6)
+            ) ||
+            (chatRoomAux == Common.RESERVED_DATA_FLOW)
+            ) {
             
             return false;
         }
         
-        index = 0;
-        for (String s : textIP.split("\\.")) {
-
-            /* Casts the read value (an integer) into a byte */
-            IPaddr[index] = (byte) ((int) Integer.valueOf(s));
-            index++;
-        }
-
         try {
             /* Creates a new Host */
-            host = new Host(InetAddress.getByAddress(IPaddr),
-                            portAux,
-                            chatRoomAux);
+            host = new Host (InetAddress.getByName(textIP),
+                             portAux,
+                             chatRoomAux);
             
         } catch (UnknownHostException ex) {
             
@@ -178,5 +195,4 @@ public class ConnectionDialog {
         
         return true;
     }
-    
 }

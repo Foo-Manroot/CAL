@@ -44,11 +44,6 @@ import peer.Peer;
 public class PaneCreator {
 
     /**
-     * Number of times that the "tab" key has been pressed.
-     */
-    private static int tabCounter = 0;
-
-    /**
      * Generates and adds the text to the given TextFlow. Also, adds the
      * necessary items, like a context menu.
      *

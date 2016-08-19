@@ -112,8 +112,11 @@ public class Host implements Serializable {
      * <pre>
      *  Bytes: 
      *      0: Data flow.
-     *      1, 2, 3, 4: IP address (on {@code array[1]} is the highest byte).
-     *      5, 6, 7, 8: port (on {@code array [5]} is the highest byte)
+     *      1: Indicates the length of the address (4 if it's IPv4, 8 if IPv6).
+     *      2, 3, 4, 5: IP address (on {@code array[2]} is the highest byte).
+     *          (if it's an IPv6 address, takes 12 bytes more and the port 
+     *          number starts on {@code array[18]})
+     *      6, 7, 8, 9: port (on {@code array [6]} is the highest byte)
      * </pre>
      * 
      * @param buffer 
@@ -129,14 +132,15 @@ public class Host implements Serializable {
         
         Host host;
         byte dataFlow;
-        byte [] addressAux = new byte [4];
+        byte addrLen = (buffer.length < 2)? -1 : buffer [1];
+        byte [] addressAux = new byte [addrLen];
         byte [] portAux = new byte [4];
         int port;
         InetAddress address;
         
         /* Checks the length of the buffer. If it's longer or shorter than
         needed, it will return null */
-        if (buffer.length != 9) {
+        if ((addrLen < 0) || (buffer.length != (addrLen + 6))) {
             
             return null;
         }
@@ -144,8 +148,8 @@ public class Host implements Serializable {
         
         /* Creates the variables needed, so a new host can be created */
         dataFlow = buffer[0];
-        System.arraycopy(buffer, 1, addressAux, 0, addressAux.length);
-        System.arraycopy(buffer, addressAux.length + 1, portAux, 0, portAux.length);
+        System.arraycopy(buffer, 2, addressAux, 0, addrLen);
+        System.arraycopy(buffer, addrLen + 2, portAux, 0, portAux.length);
         
         /* Converts the byte array into an int */
         port = Common.arrayToInt(portAux);
@@ -423,8 +427,11 @@ public class Host implements Serializable {
      * <pre>
      *  Bytes: 
      *      0: Data flow.
-     *      1, 2, 3, 4: IP address (on {@code array[1]} is the highest byte).
-     *      5, 6, 7, 8: port (on {@code array [5]} is the highest byte)
+     *      1: Indicates the length of the address (4 if it's IPv4, 8 if IPv6).
+     *      2, 3, 4, 5: IP address (on {@code array[2]} is the highest byte).
+     *          (if it's an IPv6 address, takes 12 bytes more and the port 
+     *          number starts on {@code array[18]})
+     *      6, 7, 8, 9: port (on {@code array [6]} is the highest byte)
      * </pre>
      * 
      * @return 
@@ -433,17 +440,19 @@ public class Host implements Serializable {
      */
     public byte [] getInfo () {
         
-        byte [] retVal = new byte [9];
         byte [] address = IPaddress.getAddress();
         byte [] portArray;
+        byte [] retVal = new byte [address.length + 6];
         
         /* Converts the port (4 Bytes) into a byte array */
         portArray = Common.intToArray(port);
         
         /* Copies the information on the correct order */
         retVal [0] = dataFlow;
-        System.arraycopy(address, 0, retVal, 1, 4);
-        System.arraycopy(portArray, 0, retVal, 5, 4);
+        retVal [1] = (byte) address.length;
+        /* If it's an IPv4 address, takes 4 bytes; if it's v6, takes 16 bytes */
+        System.arraycopy(address, 0, retVal, 2, address.length);
+        System.arraycopy(portArray, 0, retVal, address.length + 2, 4);
         
         return retVal;
     }

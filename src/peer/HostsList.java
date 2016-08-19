@@ -60,7 +60,10 @@ public class HostsList {
             return false;
         }
         
-        if (hosts.contains(host)) {
+        /* If the host was already on the list, returns false */
+        if (search(host.getDataFlow(),
+                   host.getIPaddress(),
+                   host.getPort()) != null) {
             
             return false;
         }
@@ -152,7 +155,7 @@ public class HostsList {
         
         return null;
     }
-     
+
      /**
      * Searches all the hosts that belongs to the given data flow. If no hosts
      * with that characteristic is found, returns an empty list.
@@ -265,7 +268,7 @@ public class HostsList {
      * <p>
      * The array of bytes required (the parameter {@code packet}) can be 
      * obtained by calling the method <i>DatagramPacket.getData()</i> and 
-     * extracting only the utile charge of the packet (getting rid of the 
+     * <b>extracting only the utile charge of the packet</b> (getting rid of the 
      * header). With a {@code HOSTS_RESP} packet it can be done by extracting
      * the data from <i>HOSTS_RESP.getLength()</i> to <i>buffer.length</i>.
      * 
@@ -281,22 +284,32 @@ public class HostsList {
      */
     public ConcurrentLinkedQueue<Host> readPacket (byte [] packet) {
         
-        /* Divides the packet into smaller pieces of 7 bytes to create new 
-        hosts and adds them to the list, if they wasn't already on it */
-        byte [] buffer = new byte [9];
+        /* Divides the packet into smaller pieces to create new hosts and adds
+        them to the list, if they wasn't already on it */
+        byte [] buffer;
+        /* Length of the address (depends on the IP version) */
+        byte addrLen;
         //ConcurrentLinkedQueue<Host> knownHosts = hosts;
         ConcurrentLinkedQueue<Host> changes = new ConcurrentLinkedQueue<>();
         Host auxHost;
         
-        /* If the packet wasn't complete, returns */
-        if ((packet.length % 9) != 0) {
+        /* Minimum length of the packet: 10 (4 bytes for an IPv4 address and 6
+        auxiliar bytes) */
+        if (packet.length < 10) {
 
             return null;
         }
         
+        /* As indicated on Host.getInfo(), the second byte indicates the
+        addresss length */
+        addrLen = packet [1];
+
         /* Creates a new host until no more bytes are left */
-        for (int i = 0; i < packet.length; i += buffer.length) {
+        for (int i = 0; i < packet.length;
+                i += (addrLen + 6),
+                addrLen = (i >= packet.length)? 0 : packet [i + 1]) {
             
+            buffer = new byte [addrLen + 6];
             System.arraycopy(packet, i, buffer, 0, buffer.length);
             
             /* Creates the host with the given information */
@@ -315,10 +328,10 @@ public class HostsList {
 
                         /* Sends a HELLO message. If they answer back, they're
                         added to the list */
-                        if (localPeer.connect(auxHost)) {
+                        //if (localPeer.connect(auxHost)) {
                             
                             changes.add(auxHost);
-                        }
+                        //}
                     }
                 }
             }

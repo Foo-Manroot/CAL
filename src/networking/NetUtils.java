@@ -6,11 +6,13 @@
 package networking;
 
 import common.Common;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
@@ -30,8 +32,10 @@ public class NetUtils {
         ArrayList<InetAddress> addresses = new ArrayList<>();
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-            /* Adds the wildcard address -> 0.0.0.0 */
+            /* Adds the wildcard addresses -> 0.0.0.0 and 0:0:0:0:0:0:0:0 */
             addresses.add(new InetSocketAddress(0).getAddress());
+            addresses.add(InetAddress.getByName("::"));
+            
             while (interfaces.hasMoreElements()) {
                 NetworkInterface iface = interfaces.nextElement();
                 /* The inactive interfaces are omitted */
@@ -42,7 +46,7 @@ public class NetUtils {
                     addresses.add(addr.getAddress());
                 }
             }
-        } catch (SocketException ex) {
+        } catch (SocketException | UnknownHostException ex) {
             Common.logger.logError("Exception at Common.getInterfaces(): " + ex.getMessage());
         }
         return addresses;
