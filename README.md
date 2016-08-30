@@ -6,7 +6,7 @@
 # Functionalities
   This chat, written in Java, has only one _.jar_ file where the functionalities for a server and a client are implemented. That means that there's no need for a server to be running, but anyone can connect to any host at any time.
   
-  As no server is needed, there's no way to monitorise the activity of a single user,and that means more privacy than a simple client-server chat. For the moment, **the messages aren't encrypted**; but it seems that the [release of Java 9](http://openjdk.java.net/jeps/219) adds  support for [DTLS](https://en.wikipedia.org/wiki/Datagram_Transport_Layer_Security), so it's possible that it'll be implemented on this chat, too (even though it's a personal project and its implementation on this chat may not be correctly done and, therefore, the encryption would be useless).
+  As no server is needed, there's no way to control the activity of a single user,and that means more privacy than a simple client-server chat. For the moment, **the messages aren't encrypted**; but it seems that the [release of Java 9](http://openjdk.java.net/jeps/219) adds  support for [DTLS](https://en.wikipedia.org/wiki/Datagram_Transport_Layer_Security), so it's possible that it'll be implemented on this chat, too (even though it's a personal project and its implementation on this chat may not be correctly done and, therefore, the encryption would be useless).
   
   Java 8 is needed for this program to be executed correctly.
   
@@ -52,7 +52,7 @@
   
   To add more functionalities to the chat, there are commands that can be executed adding the escape character '/' to the start of the line.
   
-  Also, there has been implemented an autocompletion utility so the TAB key can be pressed and the completed command (or, with another hit of the TAB key, a possible suggestion) can be shown. An example of this functionality:
+  Also, there has been implemented an auto-completion utility so the TAB key can be pressed and the completed command (or, with another hit of the TAB key, a possible suggestion) can be shown. An example of this functionality:
   
     /h(TAB)
     (TAB)
@@ -61,7 +61,7 @@
   Another example:
   
     /he(TAB)
-    /help     # Autocompleted after the TAB key is pressed.
+    /help     # Auto-completed after the TAB key is pressed.
     
   There are a few supported commands, but there is a work in progress to add more functionalities. For the moment, the supported commands are:
   * /help: shows a message with the available commands and their explanation
