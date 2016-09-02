@@ -8,9 +8,9 @@ package peer;
 import static common.Common.logger;
 
 import common.Common;
-import control.ControlMessage;
+import packets.ControlMessage;
 import control.Notification;
-import control.PacketCreator;
+import packets.PacketCreator;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;

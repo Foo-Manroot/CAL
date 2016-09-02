@@ -2,9 +2,9 @@ package peer;
 
 import static common.Common.logger;
 
-import control.ControlMessage;
+import packets.ControlMessage;
 import control.Notification;
-import control.PacketCreator;
+import packets.PacketCreator;
 import gui.ClientHandlerGUI;
 import java.net.DatagramPacket;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package control;
+package packets;
 
 /**
  * Represents one of the possible messages that can be send between peers.
@@ -89,16 +89,16 @@ CODE 0 GROUP:
     CHECK_CON (0, 11),
     
     
-//    /**
-//     * If this message is on the beginning of the buffer, that means that the
-//     * following data is a continuation of another packet sent before.
-//     * 
-//     * <p>
-//     * If this message is at the end of the buffer (from BUFF_SIZE - 4 to 
-//     * BUFF_SIZE), means that the data is not full and another packet will be 
-//     * sent.
-//     */
-//    CONT (0, 6),
+    /**
+     * If this message is on the beginning of the buffer, that means that the
+     * following data is a continuation of another packet sent before.
+     * 
+     * <p>
+     * If this message is at the end of the buffer (from BUFF_SIZE - 4 to 
+     * BUFF_SIZE), means that the data is not full and another packet will be 
+     * sent.
+     */
+    CONT (0, 6),
     
     /**
      * This message asks the destination peer to change the data flow id.
@@ -158,7 +158,19 @@ CODE 1 GROUP:
      * position the highest byte of the integer that represents the port, and
      * {@code packet[10]} the lowest byte.
      */
-    PLAIN (1, 7);
+    PLAIN (1, 7),
+    
+    /**
+     * Indicates that the following bytes are data (photo, video or any other
+     * file).
+     * 
+     * <p>
+     * This method has 4 bytes as the first argument: the port where the answer
+     * has to be sent. This bytes start at {@code packet[6]}, being that 
+     * position the highest byte of the integer that represents the port, and
+     * {@code packet[9]} the lowest byte.
+     */
+    DATA (1, 6);
     
     
 /* ------------------------------------------ */

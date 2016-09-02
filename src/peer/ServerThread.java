@@ -8,10 +8,10 @@ package peer;
 import static common.Common.logger;
 
 import common.Common;
-import control.ControlMessage;
+import packets.ControlMessage;
 import control.Notification;
-import control.PacketChecker;
-import control.PacketCreator;
+import packets.PacketChecker;
+import packets.PacketCreator;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;

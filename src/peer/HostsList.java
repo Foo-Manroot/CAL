@@ -1,8 +1,8 @@
 package peer;
 
 import common.Common;
-import control.ControlMessage;
-import control.PacketCreator;
+import packets.ControlMessage;
+import packets.PacketCreator;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;

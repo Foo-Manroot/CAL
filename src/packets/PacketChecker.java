@@ -1,4 +1,4 @@
-package control;
+package packets;
 
 /**
  * This class has some methods to check if a packet is correctly formed and 

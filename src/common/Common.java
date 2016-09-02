@@ -2,7 +2,6 @@ package common;
 
 import commands.Parser;
 import control.ConnectionObserver;
-import control.ControlMessage;
 import gui.LangChangeObserver;
 import gui.PeerGUI;
 import java.io.EOFException;
@@ -12,15 +11,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import networking.NetUtils;
+import packets.ControlMessage;
 import peer.Host;
 
 /**
@@ -44,7 +38,7 @@ public class Common {
      * about the chosen data flow ID on a {@code CHNG_DF_REQ}
      * {@link ControlMessage}.
      */
-    public static byte RESERVED_DATA_FLOW = 127;
+    public static final byte RESERVED_DATA_FLOW = 127;
 
     /**
      * Object used to log events.

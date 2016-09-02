@@ -9,9 +9,9 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.Date;
 import common.Common;
-import control.ControlMessage;
+import packets.ControlMessage;
 import control.Notification;
-import control.PacketCreator;
+import packets.PacketCreator;
 import java.net.UnknownHostException;
 
 /**

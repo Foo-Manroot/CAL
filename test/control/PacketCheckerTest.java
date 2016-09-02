@@ -5,6 +5,8 @@
  */
 package control;
 
+import packets.PacketCreator;
+import packets.PacketChecker;
 import peer.Host;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
