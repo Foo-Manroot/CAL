@@ -6,6 +6,8 @@
 package peer;
 
 import static common.Common.logger;
+import static packets.ControlMessage.*;
+import static control.Notification.*;
 
 import common.Common;
 import packets.ControlMessage;
@@ -418,11 +420,11 @@ public class ServerThread extends Thread {
                 case CHECK_CON:
                     handleCHECK_CON();
                     break;
-                    
+
                 case CONT:
                     handleCONT();
                     break;
-                    
+
                 case CHNG_DF_REQ:
                     handleCHNG_DF_REQ();
                     break;
@@ -473,7 +475,7 @@ public class ServerThread extends Thread {
             byte newDF;
 
             byte [] aux = new byte [4];
-            System.arraycopy(buffer, ControlMessage.ACK.getLength(),
+            System.arraycopy(buffer, ACK.getLength(),
                              aux, 0, aux.length);
             int portAux = Common.arrayToInt(aux);
 
@@ -554,7 +556,7 @@ public class ServerThread extends Thread {
             Host sender;
 
             byte [] aux = new byte [4];
-            System.arraycopy(buffer, ControlMessage.HOSTS_REQ.getLength(),
+            System.arraycopy(buffer, HOSTS_REQ.getLength(),
                              aux, 0, aux.length);
             int portAux = Common.arrayToInt(aux);
 
@@ -594,7 +596,7 @@ public class ServerThread extends Thread {
             ConcurrentLinkedQueue<Host> addedHosts;
             /* Gets the argument on the HOSTS_RESP message (the bytes
             representation of the hosts) */
-            int args = ControlMessage.HOSTS_RESP.getLength();
+            int args = HOSTS_RESP.getLength();
             byte [] info = new byte [buffer.length - args];
 
             System.arraycopy(buffer, args, info, 0, info.length);
@@ -661,7 +663,7 @@ public class ServerThread extends Thread {
             DatagramPacket response;
             /* Gets the argument on the HELLO message (the port where the sender
             peer will be listening) */
-            int args = ControlMessage.HELLO.getLength();
+            int args = HELLO.getLength();
             byte [] portArray = {buffer[args],
                                  buffer[args + 1],
                                  buffer[args + 2],
@@ -723,7 +725,7 @@ public class ServerThread extends Thread {
             String msg;
 
             byte [] aux = new byte [4];
-            System.arraycopy(buffer, ControlMessage.BYE.getLength(),
+            System.arraycopy(buffer, BYE.getLength(),
                              aux, 0, aux.length);
             int portAux = Common.arrayToInt(aux);
 
@@ -780,7 +782,7 @@ public class ServerThread extends Thread {
             Host sender;
 
             byte [] aux = new byte [4];
-            System.arraycopy(buffer, ControlMessage.CHECK_CON.getLength(),
+            System.arraycopy(buffer, CHECK_CON.getLength(),
                              aux, 0, aux.length);
             int portAux = Common.arrayToInt(aux);
 
@@ -825,7 +827,7 @@ public class ServerThread extends Thread {
             Notification expectedAnswer;
 
             byte [] aux = new byte [4];
-            System.arraycopy(buffer, ControlMessage.CHNG_DF_REQ.getLength(),
+            System.arraycopy(buffer, CHNG_DF_REQ.getLength(),
                              aux, 0, aux.length);
             int senderPort = Common.arrayToInt(aux);
 
@@ -833,7 +835,7 @@ public class ServerThread extends Thread {
             /* Gets the second argument on the message (the proposed data
             flow). 4 extra bytes must be added to get this argument because the
             first one is the port number */
-            int args = ControlMessage.CHNG_DF_REQ.getLength() + 4;
+            int args = CHNG_DF_REQ.getLength() + 4;
             byte proposedDF = buffer[args];
 
             /* Searches the sender host on the list */
@@ -865,7 +867,7 @@ public class ServerThread extends Thread {
 
                     expectedAnswer = new Notification(sender.getIPaddress(),
                                                       dataFlow,
-                                                      ControlMessage.ACK,
+                                                      ACK,
                                                       argsAnswer);
 
                     response = PacketCreator.CHNG_DF_RESP(dataFlow,
@@ -892,7 +894,7 @@ public class ServerThread extends Thread {
 
                     expectedAnswer = new Notification(sender.getIPaddress(),
                                                       dataFlow,
-                                                      ControlMessage.ACK,
+                                                      ACK,
                                                       argsAnswer);
 
                     response = PacketCreator.CHNG_DF_RESP(dataFlow,
@@ -919,7 +921,7 @@ public class ServerThread extends Thread {
                     argsAnswer = new byte[] {proposedDF};
                     expectedAnswer = new Notification(sender.getIPaddress(),
                                                       dataFlow,
-                                                      ControlMessage.ACK,
+                                                      ACK,
                                                       argsAnswer);
 
                     response = PacketCreator.CHNG_DF_RESP(dataFlow,
@@ -957,7 +959,7 @@ public class ServerThread extends Thread {
             Host sender;
 
             byte [] aux = new byte [4];
-            System.arraycopy(buffer, ControlMessage.CHNG_DF_RESP.getLength(),
+            System.arraycopy(buffer, CHNG_DF_RESP.getLength(),
                              aux, 0, aux.length);
             int senderPort = Common.arrayToInt(aux);
 
@@ -966,7 +968,7 @@ public class ServerThread extends Thread {
             /* Gets the second argument on the message (the proposed data
             flow). 4 extra bytes must be added to get this argument because the
             first one is the port number */
-            int args = ControlMessage.CHNG_DF_RESP.getLength() + 4;
+            int args = CHNG_DF_RESP.getLength() + 4;
             byte proposedDF;
 
             /* Searches the sender host on the list */
@@ -1059,7 +1061,7 @@ public class ServerThread extends Thread {
 
                         notification = new Notification (sender.getIPaddress(),
                                                          dataFlow,
-                                                         ControlMessage.ACK,
+                                                         ACK,
                                                          argsACK);
 
                         response = PacketCreator.CHNG_DF_RESP(dataFlow,
@@ -1099,13 +1101,13 @@ public class ServerThread extends Thread {
             Host sender;
 
             byte [] aux = new byte [4];
-            System.arraycopy(buffer, ControlMessage.PLAIN.getLength(),
+            System.arraycopy(buffer, PLAIN.getLength(),
                              aux, 0, aux.length);
             int portAux = Common.arrayToInt(aux);
 
             /* Gets the second argument on the PLAIN message (the plain text),
             being aware that the first argument (the port) uses 4 bytes */
-            byte [] msgAux = parsePlain();
+            byte [] msgAux = parsePlain (PLAIN.getLength());
 
             /* Searches the sender on its list. If its not found, returns
             without sending an answer back */
@@ -1117,7 +1119,7 @@ public class ServerThread extends Thread {
                 /* Shows the message on screen */
                 logger.logMsg(new String (msgAux), sender, true);
 
-                /* As the sender is known, creates an ACK packet sends it */
+                /* As the sender is known, creates an ACK packet and sends it */
                 response = PacketCreator.ACK(sender.getDataFlow(), port);
                 sender.send(response);
             } else {
@@ -1131,25 +1133,32 @@ public class ServerThread extends Thread {
                         + "\n");
             }
         }
-        
+
+
         /**
-         * Parses the given plaintext message. If there's a CONT message at 
+         * Parses the given plaintext message. If there's a CONT message at
          * the end of the buffer, strips it and creates a notification.
-         * 
-         * @return 
+         *
+         *
+         * @param args
+         *              Byte where the arguments start (the returned value
+         *          of {@code ControlMessage.getLength()}).
+         *
+         *
+         * @return
          *              A byte array with the plaintext message, ready to
          *          be printed.
          */
-        private byte [] parsePlain () {
-            
+        private byte [] parsePlain (int args) {
+
             /* Gets the second argument on the PLAIN message (the plain text),
             being aware that the first argument (the port) uses 4 bytes */
-            int args = ControlMessage.PLAIN.getLength();
             byte [] msgAux;
-            
+            Notification notif;
+
             /* If there is more data left, creates a notification */
             if (PacketChecker.hasMoreData (buffer)) {
-              
+
                 /* Avoids showing the last 4 bytes ("CONT") */
                 msgAux = new byte [packet.getLength() - args - 4 - 4];
 
@@ -1159,25 +1168,33 @@ public class ServerThread extends Thread {
                                   0,
                                   msgAux.length);
                 
+                /* Creates and adds the notification */
+                notif = new Notification(packet.getAddress(),
+                                         dataFlow,
+                                         CONT,
+                                         new byte [] {CONT_PLAIN});
+
+                notifications.add (notif);
+
             } else {
-                
-                msgAux = new byte [packet.getLength() - args - 4];
+                /* Adds two more bytes for the carry return */
+                msgAux = new byte [packet.getLength() - args - 4 + 2];
 
                 System.arraycopy (packet.getData(),
                                   args + 4,
                                   msgAux,
                                   0,
                                   msgAux.length);
-                
+
                 /* Appends a carry return to the end of the message */
                 msgAux [msgAux.length - 2] = '\r';
                 msgAux [msgAux.length - 1] = '\n';
             }
-            
+
             return msgAux;
         }
 
-        
+
         /**
          * Handles a received {@code CONT} packet.
          *
@@ -1190,23 +1207,51 @@ public class ServerThread extends Thread {
 
             DatagramPacket response;
             Host sender;
-            
+            Notification notif;
+
             byte [] aux = new byte [4];
-            System.arraycopy(buffer, ControlMessage.CONT.getLength(),
+            System.arraycopy(buffer, CONT.getLength(),
                              aux, 0, aux.length);
-            int portAux = Common.arrayToInt(aux);
             
+            int portAux = Common.arrayToInt(aux);    
+            String msg;
+
             /* Searches the sender on its list. If its not found, returns
             without sending an answer back */
             if ((sender = peer.getHostsList().search(dataFlow,
                                                      packet.getAddress(),
                                                      portAux)
                 ) != null) {
+                
+                /* Checks if there was any notification for a CONT message */
+                if ((notif = searchNotification(packet)) != null) {
 
-                /* Shows the message on screen */
-//                logger.logMsg(new String (msgAux), sender, true);
+                    /* Handles differently the data continuations and the
+                    plaintext ones */
+                    if (notif.hasArgs()) {
 
-                /* As the sender is known, creates an ACK packet sends it */
+                        switch (notif.getArgs()[0]) {
+
+                            case CONT_PLAIN:
+                                msg = new String (parsePlain(CONT.getLength()));
+                                /* Shows the message on screen */
+                                logger.logMsg(msg,
+                                              sender,
+                                              true);
+                                break;
+
+                            case CONT_DATA:
+                                break;
+
+                            default:
+                                logger.logWarning ("Unknown argument on CONT "
+                                                   + "notification: "
+                                                   + notif.getArgs()[0]);
+                        }
+                    }
+                }
+
+                /* As the sender is known, creates an ACK packet and sends it */
                 response = PacketCreator.ACK(sender.getDataFlow(), port);
                 sender.send(response);
             } else {

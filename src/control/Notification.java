@@ -14,6 +14,22 @@ import java.util.Date;
 public class Notification {
 
     /**
+     * In the argument array, indicates that this notification indicates an 
+     * expected {@code PLAIN} continuation.
+     */
+    public static final byte CONT_PLAIN = 1;
+    
+    /**
+     * In the argument array, indicates that this notification indicates an 
+     * expected {@code DATA} continuation.
+     */
+    public static final byte CONT_DATA = 2;
+    
+/* ---------------------------------- */
+/* ---- END OF STATIC ATTRIBUTES ---- */
+/* ---------------------------------- */
+    
+    /**
      * If this attribute is <i>false</i>, it means that the message that this 
      * notification refers to hasn't been received yet. If it has been received,
      * this attribute must be set to <i>true</i>.
