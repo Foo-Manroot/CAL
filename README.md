@@ -20,7 +20,7 @@
   
   3. Go to the src/ directory and compile the _.java_ with `javac -verbose -d ../build */*.java` (_-verbose_ isn't necessary, but recommended).
   
-  4. After creating the _.class_ files, go  to the output directory (`cd ../build`) and create the manifest file needed for the _.jar_. The manifest (named Manifest.txt in this) file should, at least, have the following line (**with a new line** after the main class declaration):
+  4. After creating the _.class_ files, go  to the output directory (`cd ../build`) and create the manifest file needed for the _.jar_. The manifest (named Manifest.txt in this example) file should, at least, have the following line (**with a new line** after the main class declaration):
   
     > Main-Class: main.Main
   
@@ -42,9 +42,9 @@
   The main interface has a main pane that occupies the majority of the interface and two little panels on the right to show error and warning messages (they can be hidden). Below there are also two buttons to establish a new connection (button 'connect') and to check the connection with all the known peers (button 'check connection').
   
   To establish a new connection, both the button 'connect' and the '+' symbol on the tab panel can be pressed. After that, a little dialog is shown to enter the details of the host with which the connection will be done. The parameters to the new connection are the following:
-    * IP address: it can be IPv4 or IPv6. It hasn't been tested with IPv6, though; but it should work correctly.
-    * Port: port where the other peer is listening for incoming connections (the title of the main window should be 'peer listening on X', being X the port number).
-    * Chat room ID: every peer can handle up to (2^8 - 2) different connections (254, from -128 to 126). This doesn't mean that it can be connected to a maximum of 254 _peers_, but it can bee connected to a maximum of 254 _rooms_. The maximum size of each room isn't limited.
+   * IP address: it can be IPv4 or IPv6. It hasn't been tested with IPv6, though; but it should work correctly.
+   * Port: port where the other peer is listening for incoming connections (the title of the main window should be 'peer listening on X', being X the port number).
+   * Chat room ID: every peer can handle up to (2^8 - 2) different connections (254, from -128 to 126). This doesn't mean that it can be connected to a maximum of 254 _peers_, but it can bee connected to a maximum of 254 _rooms_. The maximum size of each room isn't limited.
     
   Once that the connection is achieved, a new tab will be automatically added to the tabs panel and the conversation can start.
   
