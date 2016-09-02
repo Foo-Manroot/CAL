@@ -630,31 +630,39 @@ public class Peer {
     public ArrayList<Host> sendMessage (String message, byte chatRoom) {
         
         ArrayList<Host> failures = new ArrayList<>();
-        DatagramPacket packet;
+        ArrayList<DatagramPacket> packetList;
         Notification expectedAnswer;
+        
+        
+        packetList = PacketCreator.PLAIN(chatRoom,
+                                         message.getBytes(),
+                                         server.getPort());
         
         /* Sends the message to the rest of the peers on the current
         conversation (4 tries until giving up) */
         for (Host h : hostsList.search(chatRoom)) {
 
-            packet = PacketCreator.PLAIN(chatRoom,
-                                         message.getBytes(),
-                                         server.getPort());
+            for (DatagramPacket packet : packetList) {
+                
+                expectedAnswer = new Notification(h.getIPaddress(),
+                                                  h.getDataFlow(),
+                                                  ControlMessage.ACK);
 
-            expectedAnswer = new Notification(h.getIPaddress(),
-                                              h.getDataFlow(),
-                                              ControlMessage.ACK);
+                /* If the sending fails, adds the host to the list */
+                if (!h.send(packet, expectedAnswer, this, 4)) {
 
-            if (!h.send(packet, expectedAnswer, this, 4)) {
+                    logger.logError("Error trying to send the message \"" + 
+                                    message + "\" to:" + 
+                                    "\n" + h.toString());
+                    if (!failures.contains(h)) {
+                        
+                        failures.add(h);
+                    }
+                }
 
-                logger.logError("Error trying to send the message \"" + 
-                                message + "\" to:" + 
-                                "\n" + h.toString());
-                failures.add(h);
+                /* Removes the notification from the list */
+                server.removeNotification(expectedAnswer);
             }
-            
-            /* Removes the notification from the list */
-            server.removeNotification(expectedAnswer);
         }
         
         return failures;
