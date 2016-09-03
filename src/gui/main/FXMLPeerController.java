@@ -3,12 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package gui;
+package gui.main;
 
-import static gui.PeerGUI.peer;
+import gui.main.PeerGUI;
+import static gui.main.PeerGUI.peer;
 import static common.Common.logger;
 
 import common.Common;
+import gui.ConnectionDialog;
+import gui.room.RoomPane;
+import gui.utils.PaneCreator;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Locale;
@@ -242,7 +246,7 @@ public class FXMLPeerController implements Initializable {
      */
     private Pane newRoomPane (byte chatRoomID) {
 
-        return PaneCreator.roomsTabPane(chatRoomID, peer);
+        return RoomPane.roomsTabPane(chatRoomID, peer);
     }
 
     /**

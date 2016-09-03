@@ -2,8 +2,8 @@ package common;
 
 import commands.Parser;
 import control.ConnectionObserver;
-import gui.LangChangeObserver;
-import gui.PeerGUI;
+import gui.utils.LangChangeObserver;
+import gui.main.PeerGUI;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;

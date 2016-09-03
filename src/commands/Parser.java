@@ -6,7 +6,7 @@
 package commands;
 
 import static common.Common.logger;
-import static gui.PeerGUI.peer;
+import static gui.main.PeerGUI.peer;
 
 import common.Common;
 import java.util.ArrayList;

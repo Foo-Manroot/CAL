@@ -5,7 +5,7 @@
  */
 package control;
 
-import gui.FXMLPeerController;
+import gui.main.FXMLPeerController;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import javafx.application.Platform;
 

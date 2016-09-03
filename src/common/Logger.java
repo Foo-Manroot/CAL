@@ -1,6 +1,6 @@
 package common;
 
-import gui.PaneCreator;
+import gui.utils.PaneCreator;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;

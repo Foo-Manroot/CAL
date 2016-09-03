@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package gui;
+package gui.utils;
 
 import common.Common;
 import java.util.ArrayList;

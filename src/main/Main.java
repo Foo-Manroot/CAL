@@ -5,7 +5,7 @@
  */
 package main;
 
-import gui.PeerGUI;
+import gui.main.PeerGUI;
 
 /**
  * No documentation.
