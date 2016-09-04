@@ -5,11 +5,18 @@
  */
 package files;
 
-import static common.Common.BUFF_SIZE;
 
+import static packets.ControlMessage.*;
+
+import common.Common;
+import control.Notification;
+import gui.main.PeerGUI;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.net.DatagramPacket;
+import java.util.ArrayList;
+import packets.PacketCreator;
 import peer.Host;
 
 /**
@@ -37,23 +44,49 @@ public class FileSharer {
         
         try {
             RandomAccessFile f = new RandomAccessFile(path, "r");
-        
+            
             byte b [];
             long size = f.length();
             int offset = 0;
             int read;
+            int buff_size;
+            ArrayList<java.net.DatagramPacket>  packets;
+            Notification expectedAnswer;
 
-            /* Main loop for the file to be read and stored into the buffer */
+            /* Sends all the data on smaller packets */
             while (offset < size) {
 
-                b = new byte [BUFF_SIZE];
+                b = new byte [Common.BUFF_SIZE - 4 - DATA.getLength()];
 
                 f.seek(offset);
                 read = f.read(b, 0, b.length);
 
-                /* Packs the data on a datagram and sends it */
+                /* If the read data is smaller than the maximum buffer size,
+                creates a smaller auxiliar buffer to avoid sending unnecessary
+                data */
+                buff_size = (read > (Common.BUFF_SIZE - 4 - DATA.getLength()))? 
+                            Common.BUFF_SIZE - 4 - DATA.getLength()
+                            : read;
+                
+                byte aux [] = new byte [buff_size];
+                
+                System.arraycopy(b, 0,
+                                 aux, 0,
+                                 aux.length);
+                
+                packets = PacketCreator.DATA ((byte) 1, aux, 1234);
 
-                offset += b.length;
+                expectedAnswer =  new Notification(destination.getIPaddress(),
+                                                   destination.getDataFlow(),
+                                                   ACK);
+                
+                /* Sends the generated packets, one by one */
+                for (DatagramPacket d : packets) {
+
+                    destination.send (d, expectedAnswer, PeerGUI.peer, 4);
+                }
+
+                offset += read;
             }
             
         } catch (FileNotFoundException ex) {

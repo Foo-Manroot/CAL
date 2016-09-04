@@ -5,16 +5,16 @@
  */
 package gui.room;
 
-import commands.Command;
-import commands.Parser;
-import common.Common;
+
 import static common.Common.logger;
 import static common.Common.parser;
 import static common.Common.resourceBundle;
+
+import commands.Command;
+import commands.Parser;
+import common.Common;
 import gui.main.FXMLPeerController;
 import java.util.ResourceBundle;
-import javafx.beans.Observable;
-import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
@@ -140,7 +140,7 @@ public class RoomPane {
         /* Adds the necessary labeled nodes to the observer's list */
         Common.langObserver.addNode(sendButton);
         Common.langObserver.addNode(disconnectButton);
-
+        
     /* Options pane */
         /* Adds a TextFlow to show the information about the connected hosts */
 //        TextFlow connectedHosts = new TextFlow();

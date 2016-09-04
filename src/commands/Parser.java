@@ -9,6 +9,10 @@ import static common.Common.logger;
 import static gui.main.PeerGUI.peer;
 
 import common.Common;
+import files.FileSharer;
+import gui.files.FileShareGUI;
+import gui.main.PeerGUI;
+import java.io.File;
 import java.util.ArrayList;
 import peer.Host;
 
@@ -238,6 +242,9 @@ public class Parser {
 
             case EXIT:
                 return EXIT ();
+                
+            case SEND:
+                return SEND (chatRoom);
 
             default:
                 return false;
@@ -336,5 +343,25 @@ public class Parser {
         logger.logMsg("Leaving the room...\n");
 
         return peer.leaveChatRoom(chatRoom);
+    }
+    
+    
+    /**
+     * Shows a window to select the file to send.
+     * 
+     * @param chatRoom
+     *              The ID of the room where the receiver hosts are.
+     */
+    private boolean SEND (byte chatRoomID) {
+    
+        File selectedFile = FileShareGUI.selectFile();
+        
+        /* Sends the file to all the hosts on the room */
+        for (Host h : PeerGUI.peer.getHostsList().search(chatRoomID)) {
+            
+            FileSharer.sendFile (selectedFile.getAbsolutePath(), h);
+        }
+        
+        return true;
     }
 }

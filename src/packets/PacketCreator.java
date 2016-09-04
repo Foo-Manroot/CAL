@@ -1,5 +1,7 @@
 package packets;
 
+import static packets.ControlMessage.*;
+
 import common.Common;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
@@ -49,9 +51,9 @@ public class PacketCreator {
     public static DatagramPacket ACK (byte dataFlow, int port) {
         
         /* Creates a buffer of ACK.length */
-        byte [] buffer = new byte [ControlMessage.ACK.getLength() + 4];
+        byte [] buffer = new byte [ACK.getLength() + 4];
         
-        byte [] aux = ControlMessage.ACK.toString().getBytes();
+        byte [] aux = ACK.toString().getBytes();
         byte [] portAux = Common.intToArray(port);
         
         DatagramPacket packet;
@@ -88,8 +90,8 @@ public class PacketCreator {
     public static DatagramPacket NACK (byte dataFlow) {
         
         /* Creates a buffer of NACK.length */
-        byte [] buffer = new byte [ControlMessage.NACK.getLength()];
-        byte [] aux = ControlMessage.NACK.toString().getBytes();
+        byte [] buffer = new byte [NACK.getLength()];
+        byte [] aux = NACK.toString().getBytes();
         DatagramPacket packet;
         
         /* Fills the data. The packet has the following structure, being 'x' the
@@ -126,9 +128,9 @@ public class PacketCreator {
     public static DatagramPacket HOSTS_REQ (byte dataFlow, int port) {
         
         /* Creates a buffer of HOSTS_REQ.length, plus the length for the port */
-        byte [] buffer = new byte [ControlMessage.HOSTS_REQ.getLength() + 4];
+        byte [] buffer = new byte [HOSTS_REQ.getLength() + 4];
         
-        byte [] aux = ControlMessage.HOSTS_REQ.toString().getBytes();
+        byte [] aux = HOSTS_REQ.toString().getBytes();
         byte [] portAux = Common.intToArray(port);
         
         DatagramPacket packet;
@@ -176,9 +178,9 @@ public class PacketCreator {
                                              byte [] info) {
         
         /* Creates a buffer of HOSTS_RESP.length + info.length */
-        byte [] buffer = new byte [ControlMessage.HOSTS_RESP.getLength()
+        byte [] buffer = new byte [HOSTS_RESP.getLength()
                                    + info.length];
-        byte [] aux = ControlMessage.HOSTS_RESP.toString().getBytes();
+        byte [] aux = HOSTS_RESP.toString().getBytes();
         DatagramPacket packet;
         
         /* Fills the data. The packet has the following structure, being 'x' the
@@ -193,7 +195,7 @@ public class PacketCreator {
         System.arraycopy(aux, 0, buffer, 2, aux.length);
         
         /* Copies the information after the header */
-        System.arraycopy(info, 0, buffer, ControlMessage.HOSTS_RESP.getLength(),
+        System.arraycopy(info, 0, buffer, HOSTS_RESP.getLength(),
                          info.length);
         
         packet = new DatagramPacket(buffer, buffer.length);
@@ -219,8 +221,8 @@ public class PacketCreator {
     public static DatagramPacket HELLO (byte dataFlow, int port) {
         
         /* Creates a buffer of HELLO.length */
-        byte [] buffer = new byte [ControlMessage.HELLO.getLength() + 4];
-        byte [] aux = ControlMessage.HELLO.toString().getBytes();
+        byte [] buffer = new byte [HELLO.getLength() + 4];
+        byte [] aux = HELLO.toString().getBytes();
         DatagramPacket packet;
         byte [] portArray = Common.intToArray(port);
         
@@ -261,9 +263,9 @@ public class PacketCreator {
     public static DatagramPacket BYE (byte dataFlow, int port) {
         
         /* Creates a buffer of BYE.length, plus the length of the port array */
-        byte [] buffer = new byte [ControlMessage.BYE.getLength() + 4];
+        byte [] buffer = new byte [BYE.getLength() + 4];
         
-        byte [] aux = ControlMessage.BYE.toString().getBytes();
+        byte [] aux = BYE.toString().getBytes();
         byte [] portAux = Common.intToArray(port);
         
         DatagramPacket packet;
@@ -304,9 +306,9 @@ public class PacketCreator {
     public static DatagramPacket CHECK_CON (byte dataFlow, int port) {
         
         /* Creates a buffer of CHECK_CON.length */
-        byte [] buffer = new byte [ControlMessage.CHECK_CON.getLength() + 4];
+        byte [] buffer = new byte [CHECK_CON.getLength() + 4];
        
-        byte [] aux = ControlMessage.CHECK_CON.toString().getBytes();
+        byte [] aux = CHECK_CON.toString().getBytes();
         byte [] portAux = Common.intToArray(port);
         
         DatagramPacket packet;
@@ -354,9 +356,9 @@ public class PacketCreator {
         
         /* Creates a buffer of CHNG_DF_REQ.length, plus the argument 
         proposedFlow (1 Byte) and the port as the other argument (4 bytes) */
-        byte [] buffer = new byte [ControlMessage.CHNG_DF_REQ.getLength() + 5];
+        byte [] buffer = new byte [CHNG_DF_REQ.getLength() + 5];
         
-        byte [] aux = ControlMessage.CHNG_DF_REQ.toString().getBytes();
+        byte [] aux = CHNG_DF_REQ.toString().getBytes();
         byte [] portAux = Common.intToArray(port);
         
         DatagramPacket packet;
@@ -415,13 +417,13 @@ public class PacketCreator {
         /* If the proposal was rejected, the buffer must have an extra Byte to 
         store the second argument. */
         int packet_size = (accepted)? 
-                            ControlMessage.CHNG_DF_RESP.getLength() + 4:
-                            ControlMessage.CHNG_DF_RESP.getLength() + 5;
+                            CHNG_DF_RESP.getLength() + 4:
+                            CHNG_DF_RESP.getLength() + 5;
         
         /* Creates a buffer of the needed length */
         byte [] buffer = new byte [packet_size];
         
-        byte [] aux = ControlMessage.CHNG_DF_RESP.toString().getBytes();
+        byte [] aux = CHNG_DF_RESP.toString().getBytes();
         byte [] portAux = Common.intToArray(port);
         
         DatagramPacket packet;
@@ -479,7 +481,7 @@ public class PacketCreator {
         
         
         ArrayList<DatagramPacket> list = new ArrayList<>();
-        int size = ControlMessage.PLAIN.getLength() + 4 + plaintext.length;
+        int size = PLAIN.getLength() + 4 + plaintext.length;
         
         boolean largeText = (size > Common.BUFF_SIZE);
         byte [] buf;
@@ -488,7 +490,7 @@ public class PacketCreator {
         if (largeText) {
             
             buf = Arrays.copyOfRange (plaintext,
-                                      Common.BUFF_SIZE - ControlMessage.CONT.toString().length(),
+                                      Common.BUFF_SIZE - CONT.toString().length(),
                                       plaintext.length);
             list = createCONT(dataFlow, buf, port);
             size = Common.BUFF_SIZE;
@@ -497,9 +499,9 @@ public class PacketCreator {
         /* After the continuation packets, adds the first one (with the PLAIN 
         control message) */
         
-        /* Creates a buffer of CHECK_CON.length */
+        /* Creates a buffer of the proper length */
         byte [] buffer = new byte [size];
-        byte [] aux = ControlMessage.PLAIN.toString().getBytes();
+        byte [] aux = PLAIN.toString().getBytes();
         byte [] portAux = Common.intToArray(port);
         
         DatagramPacket packet;
@@ -520,17 +522,17 @@ public class PacketCreator {
         System.arraycopy(plaintext,
                          0, 
                          buffer,
-                         ControlMessage.PLAIN.getLength() + 4,
-                         buffer.length - ControlMessage.PLAIN.getLength() - 4);
+                         PLAIN.getLength() + 4,
+                         buffer.length - PLAIN.getLength() - 4);
         
         /* Adds the CONT control message, if needed */
         if (largeText) {
             
-            System.arraycopy(ControlMessage.CONT.toString().getBytes(),
+            System.arraycopy(CONT.toString().getBytes(),
                              0,
                              buffer,
-                             (buffer.length - ControlMessage.CONT.toString().length()),
-                             ControlMessage.CONT.toString().length());
+                             (buffer.length - CONT.toString().length()),
+                             CONT.toString().length());
         }
         
         packet = new DatagramPacket(buffer, buffer.length);
@@ -540,6 +542,97 @@ public class PacketCreator {
                 
         return list;
     }
+    
+    /**
+     * Creates a packet with the desired data.
+     * 
+     * @param dataFlow 
+     *              The flow of this packet. This byte will be on the second
+     *          position of the buffer, after the message code.
+     * 
+     * @param data 
+     *              The byte array with the data.
+     * 
+     * @param port
+     *              Port where the answer is expected.
+     * 
+     * 
+     * @return 
+     *              An array of completely formed {@link DatagramPacket}, if the
+     *          size of the data is larger than the max buffer size.
+     */
+    public static ArrayList<DatagramPacket> DATA (byte dataFlow,
+                                                  byte [] data,
+                                                  int port) {
+        
+        
+        ArrayList<DatagramPacket> list = new ArrayList<>();
+        int size = DATA.getLength() + 4 + data.length;
+        
+        boolean largeText = (size > Common.BUFF_SIZE);
+        byte [] buf;
+        
+        /* Adds first the CONT packets */
+        if (largeText) {
+            
+            buf = Arrays.copyOfRange (data,
+                                      Common.BUFF_SIZE - CONT.toString().length(),
+                                      data.length);
+            list = createCONT(dataFlow, buf, port);
+            size = Common.BUFF_SIZE;
+        }
+        
+        /* After the continuation packets, adds the first one (with the PLAIN 
+        control message) */
+        
+        /* Creates a buffer of the proper length */
+        byte [] buffer = new byte [size];
+        byte [] aux = DATA.toString().getBytes();
+        byte [] portAux = Common.intToArray(port);
+        
+        DatagramPacket packet;
+        
+        /* Fills the data. The packet has the following structure, being 'x' the
+            parameter dataFlow and p1, p2... the bytes of the port where the 
+            answer is expected (p1 is the highest byte):
+            Byte: 0  1  2  3  4  5  6  7  8  9  10   ... buffer.length
+                  1  x  D  A  T  A  p1 p1 p3 p4 (plaintext message)
+        */
+        buffer[0] = 1;
+        buffer[1] = dataFlow;
+        
+        /* Fills the control message */
+        System.arraycopy(aux, 0, buffer, 2, aux.length);
+        System.arraycopy(portAux, 0, buffer, aux.length + 2, portAux.length);
+        /* Copies the data after the header and the argument */
+        System.arraycopy(data,
+                         0, 
+                         buffer,
+                         DATA.getLength() + 4,
+                         buffer.length - DATA.getLength() - 4);
+        
+        /* Adds the CONT control message, if needed */
+        if (largeText) {
+            
+            System.arraycopy(CONT.toString().getBytes(),
+                             0,
+                             buffer,
+                             (buffer.length - CONT.toString().length()),
+                             CONT.toString().length());
+        }
+        
+        packet = new DatagramPacket(buffer, buffer.length);
+        
+        /* Adds the packet as the first item of the list */
+        list.add (0, packet);
+                
+        return list;
+    }
+    
+    
+/* --------------------- */
+/* ---- AUX METHODS ---- */
+/* --------------------- */
     
     /**
      * Creates an array of packets with continuation data (with the CONT 
@@ -565,8 +658,8 @@ public class PacketCreator {
         
         ArrayList<DatagramPacket> packets = new ArrayList<>();
         int size =  Common.BUFF_SIZE -
-                    (ControlMessage.CONT.getLength() + 4 
-                    + ControlMessage.CONT.toString().length()),
+                    (CONT.getLength() + 4 
+                    + CONT.toString().length()),
             from = 0,
             to = size;
         
@@ -643,9 +736,9 @@ public class PacketCreator {
                                                boolean moreData) {
         
         int size = (moreData)?
-                        ControlMessage.CONT.getLength() + 4 + data.length
-                        + ControlMessage.CONT.toString().length()
-                      : ControlMessage.CONT.getLength() + 4 + data.length;
+                        CONT.getLength() + 4 + data.length
+                        + CONT.toString().length()
+                      : CONT.getLength() + 4 + data.length;
         
         if (size > Common.BUFF_SIZE) {
             
@@ -653,7 +746,7 @@ public class PacketCreator {
         }
         
         byte [] buffer = new byte [size];
-        byte [] cont = ControlMessage.CONT.toString().getBytes();
+        byte [] cont = CONT.toString().getBytes();
         
         byte [] portAux = Common.intToArray(port);
         DatagramPacket packet;
@@ -675,7 +768,7 @@ public class PacketCreator {
         System.arraycopy(data,
                          0, 
                          buffer,
-                         ControlMessage.CONT.getLength() + 4, 
+                         CONT.getLength() + 4, 
                          data.length);
         
         /* If there are more data, adds the message "CONT" on the last bytes */
@@ -685,7 +778,7 @@ public class PacketCreator {
                              0,
                              buffer,
                              (buffer.length - cont.length),
-                             ControlMessage.CONT.toString().length());
+                             CONT.toString().length());
         }
         
         

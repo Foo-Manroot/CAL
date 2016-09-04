@@ -82,6 +82,11 @@ public class PacketChecker {
 
             return CONT;
         }
+        
+        if (DATA(buffer)) {
+            
+            return DATA;
+        }
 
         return null;
     }
@@ -441,6 +446,34 @@ public class PacketChecker {
                 (buffer[4] == 'A') &&
                 (buffer[5] == 'I') &&
                 (buffer[6] == 'N'));
+    }
+    
+    /**
+     * Checks if the given byte array is a valid {@code PLAIN} message.
+     *
+     * @param buffer
+     *              Byte array with the received message.
+     *
+     *
+     * @return
+     *              <i>true</i> if the message is valid, and <i>false</i>
+     *          otherwise.
+     */
+    public static boolean DATA (byte [] buffer)  {
+        /* The packet has the following structure, being 'x' the data flow  and
+          p1, p2... the bytes of the port where the answer is expected (p1 is
+          the highest byte):
+            Byte: 0  1  2  3  4  5  6  7  8  9  10   ... buffer.length
+                  1  x  D  A  T  A  p1 p1 p3 p4  (plaintext message)
+                Also, the packet length must have the proper length
+            (probably more than DATA.length, but no less).
+         */
+        return ((buffer.length >= DATA.getLength() + 4) &&
+                (buffer[0] == DATA.getCode()) &&
+                (buffer[2] == 'D') &&
+                (buffer[3] == 'A') &&
+                (buffer[4] == 'T') &&
+                (buffer[5] == 'A'));
     }
     
     

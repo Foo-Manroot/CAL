@@ -5,6 +5,9 @@
  */
 package gui.files;
 
+import common.Common;
+import gui.main.FXMLPeerController;
+import gui.main.PeerGUI;
 import java.io.File;
 import java.util.ResourceBundle;
 import javafx.geometry.Pos;
@@ -12,6 +15,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -20,7 +24,15 @@ import javafx.stage.Stage;
  */
 public class FileShareGUI {
     
+    /**
+     * Return value for {@code showConfirmDialog()}.
+     */
     private static boolean retVal;
+    
+    
+/* --------------------------------------- */
+/* ---- END OF ATTRIBUTES DECLARATION ---- */
+/* --------------------------------------- */
     
     /**
      * Confirmation dialog to accept a file interchange.
@@ -108,5 +120,37 @@ public class FileShareGUI {
         return "\nFile information: \n"
                 + "\tName: " + file.getName() + "\n"
                 + "\tSize: " + file.length() + " Bytes\n";
+    }
+    
+    /**
+     * Shows a dialog to select a file.
+     * 
+     * @return 
+     *              The selected {@link File}, or {@code null} if none has been
+     *          selected.
+     */
+    public static File selectFile () {
+        
+        ResourceBundle resourceBundle;
+        FileChooser fileChooser = new FileChooser();
+
+        resourceBundle = ResourceBundle.getBundle(Common.resourceBundle,
+                                                  FXMLPeerController.currentLocale);
+        
+        fileChooser.setTitle(resourceBundle.getString("ask_file_path"));
+
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("All Files", "*.*"),
+                new FileChooser.ExtensionFilter("Text Files", "*.txt"),
+                new FileChooser.ExtensionFilter("Data Files", "*.dat"),
+                new FileChooser.ExtensionFilter("Image Files", "*.jpg",
+                                                                "*.bmp",
+                                                                "*.gif"));
+
+        File selectedFile = fileChooser.showOpenDialog(PeerGUI.stage
+                                                              .getScene()
+                                                              .getWindow());
+        
+        return selectedFile;
     }
 }

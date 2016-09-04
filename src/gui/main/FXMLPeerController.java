@@ -5,14 +5,12 @@
  */
 package gui.main;
 
-import gui.main.PeerGUI;
 import static gui.main.PeerGUI.peer;
 import static common.Common.logger;
 
 import common.Common;
 import gui.ConnectionDialog;
 import gui.room.RoomPane;
-import gui.utils.PaneCreator;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Locale;

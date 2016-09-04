@@ -35,6 +35,12 @@ public enum Command {
      * Closes all active connections with every peer.
      */
     EXIT ("Disconnects the user from all the rooms."),
+    
+    
+    /**
+     * Opens a window to select a file to send.
+     */
+    SEND ("Opens a window to select a file to send."),
 
 
     UNKNOWN ("Unknown command.");
