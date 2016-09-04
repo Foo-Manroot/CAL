@@ -8,6 +8,7 @@ package files;
 
 import static packets.ControlMessage.*;
 import static common.Common.logger;
+import static common.Common.fileObserver;
 
 import common.Common;
 import control.Notification;
@@ -17,77 +18,172 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
+import java.util.Date;
 import packets.PacketCreator;
 import peer.Host;
 import peer.Peer;
 
 /**
- * This class implements some methods to load, send and receive files through 
+ * This class implements some methods to load, send and receive files through
  * the net.
  */
 public class FileSharer extends Thread {
-    
+
     /**
      * A string with the path to the file to be sent.
      */
     private final String path;
-    
+
     /**
      * The peer that sends the data.
      */
     private final Peer origin;
-    
+
     /**
      * The host where the data ill be sent.
      */
     private final Host destination;
+
+    /**
+     * While this attribute s <i>false</i>, no answer has been received.
+     */
+    private boolean answerReceived;
+
+    /**
+     * If the destination host accepted the transfer, this attribute will be
+     * <i>true</i>.
+     */
+    private boolean confirmed;
+
+    /**
+     * Maximum wait time (in <b>milliseconds</i>) before giving up and
+     * assuming that the destination host rejected the file transfer.
+     *
+     * <p>
+     * 300000 milliseconds = 300 seconds (5 minutes).
+     */
+    private final long MAX_WAIT_TIME = 300000;
     
+    /**
+     * Date when the request was sent.
+     */
+    private Date startDate;
+
 /* -------------------------------------- */
 /* ---- END OF ATTRIBUTE DECLARATION ---- */
 /* -------------------------------------- */
-    
+
     /**
      * Constructor.
-     * 
-     * 
-     * @param path 
+     *
+     *
+     * @param path
      *              A string with the path to the file to be sent.
-     * 
-     * @param origin 
+     *
+     * @param origin
      *              The peer that sends the data.
-     * 
-     * @param destination 
+     *
+     * @param destination
      *              The host where the data ill be sent.
      */
     public FileSharer (String path, Peer origin, Host destination) {
-        
+
         this.path = path;
         this.origin = origin;
         this.destination = destination;
+
+        answerReceived = false;
+        confirmed = false;
+        startDate = new Date ();
     }
-    
+
+    /**
+     * Blocks the thread until it's notified or the maximum wait time
+     * is reached.
+     */
+    private synchronized void checkAnswer () {
+
+        /* Waits until an answer is received or the max. wait time is reached */
+        while ((!answerReceived) &&
+               ((new Date().getTime() - startDate.getTime()) < MAX_WAIT_TIME)) {
+
+            try {
+
+                wait (MAX_WAIT_TIME);
+
+            } catch (InterruptedException ex) {
+
+                logger.logError ("InterruptedException at "
+                                + "FileSharer.checkAnswer(): "
+                                + ex.getMessage());
+            }
+        }
+    }
+
     @Override
     public void run () {
-        
+
         /* Tries to get the confirmation of the destination host */
-        //getConfirmation();
+        getConfirmation ();
+
+        startDate = new Date ();
+        checkAnswer ();
         
-        /* If confirmation has been given, sends the file */
-        sendFile();
+        logger.logWarning ("Answer received: " + answerReceived + 
+                           "\nConfirmed: " + confirmed + "\n");
+
+        if (answerReceived) {
+
+            if (confirmed) {
+                /* If confirmation has been given, sends the file */
+                if (sendFile () < 0) {
+
+                    logger.logWarning ("Error sending the file to "
+                                       + destination.toString() + "\n");
+                }
+            } else {
+
+                logger.logWarning ("The following host rejected the file"
+                                   + " transference: " + destination.toString()
+                                   + "\nFile: " + path + "\n");
+            }
+        } else {
+
+            logger.logWarning ("The following host didn't answer the file"
+                               + " transfer proposal: "
+                               +  destination.toString()
+                               + "\nFile: " + path + "\n");
+        }
     }
-    
+
+    /**
+     * If the petition has been accepted, sends the file.
+     *
+     *
+     * @param confirmed
+     *              If the other peer accepted the transfer (indicated by
+     *          {@code confirmed} being <i>true</i>), sends the file.
+     */
+    public synchronized void notifyConfirmation (boolean confirmed) {
+
+        answerReceived = true;
+        this.confirmed = confirmed;
+
+        notifyAll ();
+    }
+
     /**
      * Reads and sends the indicated file to the destination host.
-     *              
-     * 
-     * @return 
+     *
+     *
+     * @return
      *              <br>0 on success.
      *              <br>-1  if the file hasn't been found.
      *              <br>-2 if an IOException has been thrown and caught.
      *              <br>-3 if the other host refused the file transfer.
      */
-    private int getConfirmation () {
-        
+    private void getConfirmation () {
+
         DatagramPacket confirmation;
         Notification expectedAnswer;
         byte [] info = ("File:"
@@ -98,46 +194,40 @@ public class FileSharer extends Thread {
                                           info,
                                           origin.getServer().getPort());
 
-        expectedAnswer = new Notification(destination.getIPaddress(), 
+        expectedAnswer = new Notification(destination.getIPaddress(),
                                           destination.getDataFlow(),
                                           ACK);
 
-        if (confirmation == null) {
-
-            return -2;
-        }
-
-
+        /* Sends the packet and waits for confirmation */
         destination.send (confirmation, expectedAnswer, origin, 1);
-            
-        
-        return 0;
+
+        fileObserver.addHost(destination, this);
     }
-    
+
     /**
      * Reads and sends the indicated file to the destination host.
-     *              
-     * 
-     * @return 
+     *
+     *
+     * @return
      *              <br>0 on success.
      *              <br>-1  if the file hasn't been found.
      *              <br>-2 if an IOException has been thrown and caught.
      */
-    public int sendFile () {
-        
+    private int sendFile () {
+
         try {
             RandomAccessFile f = new RandomAccessFile(path, "r");
             Notification expectedAnswer;
-            
+
             byte b [];
             long size = f.length();
-            
+
             int offset = 0;
             int read;
-            
+
             int buff_size;
             ArrayList<java.net.DatagramPacket>  packets;
-            
+
             /* Sends all the data on smaller packets */
             while (offset < size) {
 
@@ -149,7 +239,7 @@ public class FileSharer extends Thread {
                 /* If the read data is smaller than the maximum buffer size,
                 creates a smaller auxiliar buffer to avoid sending unnecessary
                 data */
-                buff_size = (read > (Common.BUFF_SIZE - 4 - DATA.getLength()))? 
+                buff_size = (read > (Common.BUFF_SIZE - 4 - DATA.getLength()))?
                             Common.BUFF_SIZE - 4 - DATA.getLength()
                             : read;
 
@@ -186,22 +276,22 @@ public class FileSharer extends Thread {
             logger.logError ("IOException: " + ex.getMessage());
             return -2;
         }
-        
+
         return 0;
     }
-    
+
     /**
      * Generates a string with the information of the file.
-     * 
-     * @param file 
+     *
+     * @param file
      *              The file whose information is going to be returned.
-     * 
-     * 
-     * @return 
+     *
+     *
+     * @return
      *              A string with the information of the file.
      */
     public static String genFileInfo (File file) {
-        
+
         return "\nFile information: \n"
                 + "\tName: " + file.getName() + "\n"
                 + "\tSize: " + file.length() + " Bytes\n";

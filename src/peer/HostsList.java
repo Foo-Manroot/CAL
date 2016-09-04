@@ -125,6 +125,13 @@ public class HostsList {
      * Searches all the hosts that belongs to the given data flow. If no hosts
      * with that characteristic is found, returns an empty list.
      * 
+     * <p>
+     *    It's not recommended to used this method because it searches
+     * a host based only in its data flow and IP address. As one host
+     * may contain different instances of the same program, the peer 
+     * must be identified by its address, data flow <b>and port</b>.
+     * 
+     * 
      * @param dataFlow 
      *              The data flow that the found hosts must share.
      * 
@@ -134,13 +141,6 @@ public class HostsList {
      * 
      * @return 
      *              The searched host.
-     * 
-     * 
-     * @deprecated
-     *              It's not recommended to used this method because it searches
-     *          a host based only in its data flow and IP address. As one host
-     *          may contain different instances of the same program, the peer 
-     *          must be identified by its address, data flow <b>and port</b>.
      */
      public Host search (byte dataFlow, InetAddress adddress) {
         

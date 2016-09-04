@@ -23,7 +23,6 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
@@ -511,6 +510,16 @@ public class ServerThread extends Thread {
                         peer.addHostDF(sender, newDF);
                     }
                 }
+                
+                /**
+                 * If the ACK was an answer for a data transfer request,
+                 * notifies the observer.
+                 */
+                if ((sender != null) && 
+                    (Common.fileObserver.containsHost (sender))) {
+                    
+                    Common.fileObserver.notifyAnswer(sender, true);
+                }
 
                 /* The notification was on the list -> removes it (the
                 attribute "received" has already been set to "true" on
@@ -539,11 +548,24 @@ public class ServerThread extends Thread {
 
             InetAddress sourceAddr = packet.getAddress();
             Notification notif;
+            
+            Host sender = peer.getHostsList().search(dataFlow,
+                                                     packet.getAddress());
 
             /* Searches a waiting notification (if exists) that matches the
             source of this NACK and removes it */
             if ((notif = searchNotification(sourceAddr, dataFlow)) != null) {
 
+                /**
+                 * If the ACK was an answer for a data transfer request,
+                 * notifies the observer.
+                 */
+                if ((sender != null) && 
+                    (Common.fileObserver.containsHost (sender))) {
+                    
+                    Common.fileObserver.notifyAnswer(sender, false);
+                }
+                
                 notifications.remove(notif);
             } else {
                 /* Prints the error message */
@@ -1115,7 +1137,6 @@ public class ServerThread extends Thread {
             ResourceBundle resources;
             
             byte [] info = new byte [buffer.length - INFO.getLength() - 4];
-            boolean accepted;
             
             System.arraycopy(buffer, INFO.getLength() + 4,
                              info, 0,
@@ -1129,29 +1150,26 @@ public class ServerThread extends Thread {
                                                      portAux)
                 ) != null) {
 
-//                Platform.runLater( () -> {
-//                
-//                    DatagramPacket response;
-//                    
-//                    if (FileShareGUI.showConfirmationDialog(resources,
-//                                                            new String (info))) {
-//                    
-//                        /* As the sender is known and the petition has been 
-//                        accepted, creates an ACK packet and sends it */
-//                        response = PacketCreator.ACK(sender.getDataFlow(), port);
-//                        sender.send(response);
-//                        
-//                    } else {
-//                        
-//                        /* The petition has been rejected, so a NACK message is
-//                        sent back */
-//                        response = PacketCreator.NACK (sender.getDataFlow());
-//                        sender.send(response);
-//                    }
-//                });
-
-                DatagramPacket response = PacketCreator.ACK(sender.getDataFlow(), port);
-                sender.send(response);
+                Platform.runLater( () -> {
+                
+                    DatagramPacket response;
+                    
+                    if (FileShareGUI.showConfirmationDialog(resources,
+                                                            new String (info))) {
+                    
+                        /* As the sender is known and the petition has been 
+                        accepted, creates an ACK packet and sends it */
+                        response = PacketCreator.ACK(sender.getDataFlow(), port);
+                        sender.send (response);
+                        
+                    } else {
+                        
+                        /* The petition has been rejected, so a NACK message is
+                        sent back */
+                        response = PacketCreator.NACK (sender.getDataFlow());
+                        sender.send (response);
+                    }
+                });
                 
             } else {
 

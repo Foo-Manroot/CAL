@@ -2,6 +2,7 @@ package common;
 
 import commands.Parser;
 import control.ConnectionObserver;
+import files.FileObserver;
 import gui.utils.LangChangeObserver;
 import gui.main.PeerGUI;
 import java.io.EOFException;
@@ -43,7 +44,12 @@ public class Common {
     /**
      * Object used to log events.
      */
-    public static Logger logger = Logger.newLogger();
+    public static final Logger logger = Logger.newLogger();
+    
+    /**
+     * Observer for the file transfers.
+     */
+    public static final FileObserver fileObserver = FileObserver.newObserver();
     
     /**
      * Current room of
