@@ -359,7 +359,9 @@ public class Parser {
         /* Sends the file to all the hosts on the room */
         for (Host h : PeerGUI.peer.getHostsList().search(chatRoomID)) {
             
-            FileSharer.sendFile (selectedFile.getAbsolutePath(), h);
+            FileSharer.sendFile (selectedFile.getAbsolutePath(),
+                                 PeerGUI.peer,
+                                 h);
         }
         
         return true;

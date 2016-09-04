@@ -10,7 +10,6 @@ import static packets.ControlMessage.*;
 
 import common.Common;
 import control.Notification;
-import gui.main.PeerGUI;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -18,6 +17,7 @@ import java.net.DatagramPacket;
 import java.util.ArrayList;
 import packets.PacketCreator;
 import peer.Host;
+import peer.Peer;
 
 /**
  * This class implements some methods to load, send and receive files through 
@@ -32,7 +32,11 @@ public class FileSharer {
      * @param path 
      *              A string with the path to the file to be sent.
      * 
+     * @param origin 
+     *              The peer that sends the data.
+     * 
      * @param destination 
+     *              The host where the data ill be sent.
      *              
      * 
      * @return 
@@ -40,7 +44,7 @@ public class FileSharer {
      *              <br>-1  if the file hasn't been found.
      *              <br>-2 if an IOException has been thrown and caught.
      */
-    public static int sendFile (String path, Host destination) {
+    public static int sendFile (String path, Peer origin, Host destination) {
         
         try {
             RandomAccessFile f = new RandomAccessFile(path, "r");
@@ -74,7 +78,9 @@ public class FileSharer {
                                  aux, 0,
                                  aux.length);
                 
-                packets = PacketCreator.DATA ((byte) 1, aux, 1234);
+                packets = PacketCreator.DATA (destination.getDataFlow(),
+                                              aux,
+                                              origin.getServer().getPort());
 
                 expectedAnswer =  new Notification(destination.getIPaddress(),
                                                    destination.getDataFlow(),
@@ -83,7 +89,7 @@ public class FileSharer {
                 /* Sends the generated packets, one by one */
                 for (DatagramPacket d : packets) {
 
-                    destination.send (d, expectedAnswer, PeerGUI.peer, 4);
+                    destination.send (d, expectedAnswer, origin, 4);
                 }
 
                 offset += read;

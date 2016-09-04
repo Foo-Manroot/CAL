@@ -410,47 +410,51 @@ public class ServerThread extends Thread {
             switch (message) {
 
                 case ACK:
-                    handleACK();
+                    handleACK ();
                     break;
 
                 case BYE:
-                    handleBYE();
+                    handleBYE ();
                     break;
 
                 case CHECK_CON:
-                    handleCHECK_CON();
+                    handleCHECK_CON ();
                     break;
 
                 case CONT:
-                    handleCONT();
+                    handleCONT ();
                     break;
 
                 case CHNG_DF_REQ:
-                    handleCHNG_DF_REQ();
+                    handleCHNG_DF_REQ ();
                     break;
 
                 case CHNG_DF_RESP:
-                    handleCHNG_DF_RESP();
+                    handleCHNG_DF_RESP ();
                     break;
 
                 case HELLO:
-                    handleHELLO();
+                    handleHELLO ();
                     break;
 
                 case HOSTS_REQ:
-                    handleHOSTS_REQ();
+                    handleHOSTS_REQ ();
                     break;
 
                 case HOSTS_RESP:
-                    handleHOSTS_RESP();
+                    handleHOSTS_RESP ();
                     break;
 
                 case NACK:
-                    handleNACK();
+                    handleNACK ();
                     break;
 
                 case PLAIN:
-                    handlePLAIN();
+                    handlePLAIN ();
+                    break;
+                    
+                case DATA:
+                    handleDATA ();
                     break;
 
                 default:
@@ -1134,6 +1138,50 @@ public class ServerThread extends Thread {
             }
         }
 
+        /**
+         * Handles a received {@code DATA} packet.
+         *
+         * <p>
+         * If the sender is known, shows the packet and sends an {@code ACK}
+         * back. If it isn't, shows the message with a warning note and doesn't
+         * send anything back.
+         */
+        private void handleDATA () {
+
+            DatagramPacket response;
+            Host sender;
+
+            byte [] aux = new byte [4];
+            System.arraycopy(buffer, DATA.getLength(),
+                             aux, 0,
+                             aux.length);
+            int portAux = Common.arrayToInt(aux);
+            
+            /* Searches the sender on its list. If its not found, returns
+            without sending an answer back */
+            if ((sender = peer.getHostsList().search(dataFlow,
+                                                     packet.getAddress(),
+                                                     portAux)
+                ) != null) {
+
+                /* As the sender is known, creates an ACK packet and sends it */
+                response = PacketCreator.ACK (sender.getDataFlow(), port);
+                sender.send (response);
+                
+            } else {
+
+                /* Unknown sender */
+                logger.logWarning("DATA received from an unknown source."
+                        + "\nMessage: "
+                        + "\nFrom " + packet.getAddress() + ":"
+                        + "\n\tText:" + new String(buffer)
+                        + "\n\tBytes: " + Arrays.toString(buffer)
+                        + "\n");
+            }
+        }
+/* --------------------- */
+/* ---- AUX METHODS ---- */
+/* --------------------- */
 
         /**
          * Parses the given plaintext message. If there's a CONT message at
@@ -1193,8 +1241,8 @@ public class ServerThread extends Thread {
 
             return msgAux;
         }
-
-
+        
+        
         /**
          * Handles a received {@code CONT} packet.
          *
