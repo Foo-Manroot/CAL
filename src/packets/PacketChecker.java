@@ -28,64 +28,69 @@ public class PacketChecker {
      */
     public static ControlMessage checkPacket (byte [] buffer) {
 
-        if (ACK(buffer)) {
+        if (ACK (buffer)) {
 
             return ACK;
         }
 
-        if (BYE(buffer)) {
+        if (BYE (buffer)) {
 
             return BYE;
         }
 
-        if (CHECK_CON(buffer)) {
+        if (CHECK_CON (buffer)) {
 
             return CHECK_CON;
         }
 
-        if (CHNG_DF_REQ(buffer)) {
+        if (CHNG_DF_REQ (buffer)) {
 
             return CHNG_DF_REQ;
         }
 
-        if (CHNG_DF_RESP(buffer)) {
+        if (CHNG_DF_RESP (buffer)) {
 
             return CHNG_DF_RESP;
         }
 
-        if (HELLO(buffer)) {
+        if (HELLO (buffer)) {
 
             return HELLO;
         }
 
-        if (HOSTS_REQ(buffer)) {
+        if (HOSTS_REQ (buffer)) {
 
             return HOSTS_REQ;
         }
 
-        if (HOSTS_RESP(buffer)) {
+        if (HOSTS_RESP (buffer)) {
 
             return HOSTS_RESP;
         }
 
-        if (NACK(buffer)) {
+        if (NACK (buffer)) {
 
             return NACK;
         }
 
-        if (PLAIN(buffer)) {
+        if (PLAIN (buffer)) {
 
             return PLAIN;
         }
 
-        if (CONT(buffer)) {
+        if (CONT (buffer)) {
 
             return CONT;
         }
         
-        if (DATA(buffer)) {
+        if (DATA (buffer)) {
             
             return DATA;
+        }
+        
+        if (INFO (buffer)) {
+            
+            return INFO;
         }
 
         return null;
@@ -413,6 +418,34 @@ public class PacketChecker {
                 (buffer[11] == 'E') &&
                 (buffer[12] == 'S') &&
                 (buffer[13] == 'P');
+    }
+    
+    /**
+     * Checks if the given byte array is a valid {@code INFO} message.
+     *
+     * @param buffer
+     *              Byte array with the received message.
+     *
+     *
+     * @return
+     *              <i>true</i> if the message is valid, and <i>false</i>
+     *          otherwise.
+     */
+    public static boolean INFO (byte [] buffer)  {
+        /* The packet has the following structure, being 'x' the data flow  and
+          p1, p2... the bytes of the port where the answer is expected (p1 is
+          the highest byte):
+            Byte: 0  1  2  3  4  5  6  7  8  9  10  ... buffer.length
+                  0  x  I  N  F  O  p1 p1 p3 p4 (data) ...
+                Also, the packet length must have the proper length
+            (probably more than INFO.length, but no less).
+         */
+        return ((buffer.length >= INFO.getLength() + 4) &&
+                (buffer[0] == INFO.getCode()) &&
+                (buffer[2] == 'I') &&
+                (buffer[3] == 'N') &&
+                (buffer[4] == 'F') &&
+                (buffer[5] == 'O'));
     }
 
 /* ----------------------------- */

@@ -7,9 +7,11 @@ package files;
 
 
 import static packets.ControlMessage.*;
+import static common.Common.logger;
 
 import common.Common;
 import control.Notification;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -23,10 +25,29 @@ import peer.Peer;
  * This class implements some methods to load, send and receive files through 
  * the net.
  */
-public class FileSharer {
+public class FileSharer extends Thread {
     
     /**
-     * Reads and sends the indicated file to the destination host.
+     * A string with the path to the file to be sent.
+     */
+    private final String path;
+    
+    /**
+     * The peer that sends the data.
+     */
+    private final Peer origin;
+    
+    /**
+     * The host where the data ill be sent.
+     */
+    private final Host destination;
+    
+/* -------------------------------------- */
+/* ---- END OF ATTRIBUTE DECLARATION ---- */
+/* -------------------------------------- */
+    
+    /**
+     * Constructor.
      * 
      * 
      * @param path 
@@ -37,6 +58,64 @@ public class FileSharer {
      * 
      * @param destination 
      *              The host where the data ill be sent.
+     */
+    public FileSharer (String path, Peer origin, Host destination) {
+        
+        this.path = path;
+        this.origin = origin;
+        this.destination = destination;
+    }
+    
+    @Override
+    public void run () {
+        
+        /* Tries to get the confirmation of the destination host */
+        //getConfirmation();
+        
+        /* If confirmation has been given, sends the file */
+        sendFile();
+    }
+    
+    /**
+     * Reads and sends the indicated file to the destination host.
+     *              
+     * 
+     * @return 
+     *              <br>0 on success.
+     *              <br>-1  if the file hasn't been found.
+     *              <br>-2 if an IOException has been thrown and caught.
+     *              <br>-3 if the other host refused the file transfer.
+     */
+    private int getConfirmation () {
+        
+        DatagramPacket confirmation;
+        Notification expectedAnswer;
+        byte [] info = ("File:"
+                        + genFileInfo(new File (path))).getBytes();
+
+        /* Asks the other host for confirmation */
+        confirmation = PacketCreator.INFO(destination.getDataFlow(),
+                                          info,
+                                          origin.getServer().getPort());
+
+        expectedAnswer = new Notification(destination.getIPaddress(), 
+                                          destination.getDataFlow(),
+                                          ACK);
+
+        if (confirmation == null) {
+
+            return -2;
+        }
+
+
+        destination.send (confirmation, expectedAnswer, origin, 1);
+            
+        
+        return 0;
+    }
+    
+    /**
+     * Reads and sends the indicated file to the destination host.
      *              
      * 
      * @return 
@@ -44,19 +123,21 @@ public class FileSharer {
      *              <br>-1  if the file hasn't been found.
      *              <br>-2 if an IOException has been thrown and caught.
      */
-    public static int sendFile (String path, Peer origin, Host destination) {
+    public int sendFile () {
         
         try {
             RandomAccessFile f = new RandomAccessFile(path, "r");
+            Notification expectedAnswer;
             
             byte b [];
             long size = f.length();
+            
             int offset = 0;
             int read;
+            
             int buff_size;
             ArrayList<java.net.DatagramPacket>  packets;
-            Notification expectedAnswer;
-
+            
             /* Sends all the data on smaller packets */
             while (offset < size) {
 
@@ -71,13 +152,13 @@ public class FileSharer {
                 buff_size = (read > (Common.BUFF_SIZE - 4 - DATA.getLength()))? 
                             Common.BUFF_SIZE - 4 - DATA.getLength()
                             : read;
-                
+
                 byte aux [] = new byte [buff_size];
-                
+
                 System.arraycopy(b, 0,
                                  aux, 0,
                                  aux.length);
-                
+
                 packets = PacketCreator.DATA (destination.getDataFlow(),
                                               aux,
                                               origin.getServer().getPort());
@@ -85,7 +166,7 @@ public class FileSharer {
                 expectedAnswer =  new Notification(destination.getIPaddress(),
                                                    destination.getDataFlow(),
                                                    ACK);
-                
+
                 /* Sends the generated packets, one by one */
                 for (DatagramPacket d : packets) {
 
@@ -94,18 +175,35 @@ public class FileSharer {
 
                 offset += read;
             }
-            
+
         } catch (FileNotFoundException ex) {
-        
-            System.out.println("FileNotFoundException: " + ex.getMessage());
+
+            logger.logError ("FileNotFoundException: " + ex.getMessage());
             return -1;
-            
+
         } catch (IOException ex) {
-            
-            System.out.println("IOException: " + ex.getMessage());
+
+            logger.logError ("IOException: " + ex.getMessage());
             return -2;
         }
         
         return 0;
+    }
+    
+    /**
+     * Generates a string with the information of the file.
+     * 
+     * @param file 
+     *              The file whose information is going to be returned.
+     * 
+     * 
+     * @return 
+     *              A string with the information of the file.
+     */
+    public static String genFileInfo (File file) {
+        
+        return "\nFile information: \n"
+                + "\tName: " + file.getName() + "\n"
+                + "\tSize: " + file.length() + " Bytes\n";
     }
 }

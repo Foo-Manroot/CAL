@@ -31,6 +31,10 @@ public class Parser {
      * should show a list with all the possible commands, if necessary.
      */
     private int tabsCount = 0;
+    
+/* -------------------------------------- */
+/* ---- END OF ATTRIBUTE DECLARATION ---- */
+/* -------------------------------------- */
 
     /**
      * Tries to determine if the given string can be a bit of any known command,
@@ -356,12 +360,22 @@ public class Parser {
     
         File selectedFile = FileShareGUI.selectFile();
         
+        if (!selectedFile.exists()) {
+            
+            logger.logError("The selected file doesn't exists.\n");
+            return false;
+        }
+        
         /* Sends the file to all the hosts on the room */
         for (Host h : PeerGUI.peer.getHostsList().search(chatRoomID)) {
             
-            FileSharer.sendFile (selectedFile.getAbsolutePath(),
-                                 PeerGUI.peer,
-                                 h);
+            /* Creates a thread to wait for the destination to accept
+            the transfer */
+            FileSharer sharer = new FileSharer (selectedFile.getAbsolutePath(),
+                                                PeerGUI.peer,
+                                                h);
+           
+            sharer.start();
         }
         
         return true;

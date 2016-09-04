@@ -106,23 +106,6 @@ public class FileShareGUI {
     }
     
     /**
-     * Generates a string with the information of the file.
-     * 
-     * @param file 
-     *              The file whose information is going to be returned.
-     * 
-     * 
-     * @return 
-     *              A string with the information of the file.
-     */
-    public static String genFileInfo (File file) {
-        
-        return "\nFile information: \n"
-                + "\tName: " + file.getName() + "\n"
-                + "\tSize: " + file.length() + " Bytes\n";
-    }
-    
-    /**
      * Shows a dialog to select a file.
      * 
      * @return 

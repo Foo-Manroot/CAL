@@ -64,7 +64,7 @@ public class PacketCreator {
             Byte: 0  1  2  3  4  5  6  7  8
                   0  x  A  C  K  p1 p2 p3 p4
         */
-        buffer[0] = 0;
+        buffer[0] = (byte) ACK.getCode();;
         buffer[1] = dataFlow;
         
         /* Fills the control message */
@@ -99,7 +99,7 @@ public class PacketCreator {
             Byte: 0  1  2  3  4  5
                   0  x  N  A  C  K
         */
-        buffer[0] = 0;
+        buffer[0] = (byte) NACK.getCode();;
         buffer[1] = dataFlow;
         
         /* Fills the control message */
@@ -141,7 +141,7 @@ public class PacketCreator {
             Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 13 14
                   0  x  H  O  S  T  S  _  R  E  Q  p1 p2 p3 p4
         */
-        buffer[0] = 0;
+        buffer[0] = (byte) HOSTS_REQ.getCode();;
         buffer[1] = dataFlow;
         
         /* Fills the control message  and adds the parameter */
@@ -188,7 +188,7 @@ public class PacketCreator {
             Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 ... buffer.length
                   0  x  H  O  S  T  S  _  R  E  S  P   (info)
         */
-        buffer[0] = 0;
+        buffer[0] = (byte) HOSTS_RESP.getCode();;
         buffer[1] = dataFlow;
         
         /* Fills the control message */
@@ -232,7 +232,7 @@ public class PacketCreator {
             Byte: 0  1  2  3  4  5  6  7  8  9  10
                   0  x  H  E  L  L  O  p1 p2 p3 p4
         */
-        buffer[0] = 0;
+        buffer[0] = (byte) HELLO.getCode();;
         buffer[1] = dataFlow;
         
         /* Fills the control message */
@@ -276,7 +276,7 @@ public class PacketCreator {
             Byte: 0  1  2  3  4  5  6  7  8
                   0  x  B  Y  E  p1 p2 p3 p4
         */
-        buffer[0] = 0;
+        buffer[0] = (byte) BYE.getCode();;
         buffer[1] = dataFlow;
         
         /* Fills the control message */
@@ -319,7 +319,7 @@ public class PacketCreator {
             Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 13 14
                   0  x  C  H  E  C  K  _  C  O  N  p1 p2 p3 p4
         */
-        buffer[0] = 0;
+        buffer[0] = (byte) CHECK_CON.getCode();;
         buffer[1] = dataFlow;
         
         /* Fills the control message */
@@ -370,7 +370,7 @@ public class PacketCreator {
             Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17
                   0  x  C  H  N  G  _  D  F  _  R  E  Q  p1 p2 p3 p4 f
         */
-        buffer[0] = 0;
+        buffer[0] = (byte) CHNG_DF_REQ.getCode();;
         buffer[1] = dataFlow;
         
         /* Fills the control message and adds the port */
@@ -435,7 +435,7 @@ public class PacketCreator {
             Byte: 0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 (18)
                   0  x  C  H  N  G  _  D  F  _  R  E  S  P  p1 p2 p3 p4 (f)
         */
-        buffer[0] = 0;
+        buffer[0] = (byte) CHNG_DF_RESP.getCode();;
         buffer[1] = dataFlow;
         
         /* Fills the control message and */
@@ -452,6 +452,71 @@ public class PacketCreator {
         
         return packet;
     }
+    
+    /**
+     * Creates a packet with information about a file to be sent.
+     * 
+     * 
+     * @param dataFlow 
+     *              The flow of this packet. This byte will be on the second
+     *          position of the buffer, after the message code.
+     * 
+     * @param info 
+     *              Information to send. Its size can't be more than 
+     *          {@code (Common.BUFF_SIZE - Info.getLength() - 4)}.
+     * 
+     * @param port
+     *              Port where the answer is expected.
+     * 
+     * 
+     * @return 
+     *              An array of completely formed {@link DatagramPacket}, if the
+     *          size of the data is larger than the max buffer size,
+     *          returns {@code null}.
+     */
+    public static DatagramPacket INFO (byte dataFlow,
+                                       byte [] info,
+                                       int port) {
+        
+        int size = INFO.getLength() + 4 + info.length;
+        
+        if (size > Common.BUFF_SIZE) {
+            
+            return null;
+        }
+        
+        /* Creates a buffer of CHECK_CON.length */
+        byte [] buffer = new byte [size];
+       
+        byte [] aux = INFO.toString().getBytes();
+        byte [] portAux = Common.intToArray (port);
+        
+        DatagramPacket packet;
+        
+        /* Fills the data. The packet has the following structure, being 'x' the
+            parameter dataFlow and p1, p2... the bytes of the port where the 
+            answer is expected (p1 is the highest byte):
+            Byte: 0  1  2  3  4  5  6  7  8  9  10 ...
+                  0  x  I  N  F  O  p1 p2 p3 p4 (info) ...
+        */
+        buffer[0] = (byte) INFO.getCode();
+        buffer[1] = dataFlow;
+        
+        /* Fills the control message */
+        System.arraycopy(aux, 0, buffer, 2, aux.length);
+        System.arraycopy(portAux, 0, buffer, aux.length + 2, portAux.length);
+        
+        /* Adds the info */
+        System.arraycopy(info, 0,
+                         buffer, INFO.getLength() + portAux.length,
+                         info.length);
+        
+        /* Creates the packet and returns it */
+        packet = new DatagramPacket(buffer, buffer.length);
+        
+        return packet;
+    }
+    
     
 /* ----------------------------- */
 /* ---- PLAINTEXT - GROUP 1 ---- */
@@ -512,7 +577,7 @@ public class PacketCreator {
             Byte: 0  1  2  3  4  5  6  7  8  9  10 11  ... buffer.length
                   1  x  P  L  A  I  N  p1 p1 p3 p4 (plaintext message)
         */
-        buffer[0] = 1;
+        buffer[0] = (byte) PLAIN.getCode();;
         buffer[1] = dataFlow;
         
         /* Fills the control message */
@@ -598,7 +663,7 @@ public class PacketCreator {
             Byte: 0  1  2  3  4  5  6  7  8  9  10   ... buffer.length
                   1  x  D  A  T  A  p1 p1 p3 p4 (plaintext message)
         */
-        buffer[0] = 1;
+        buffer[0] = (byte) DATA.getCode();;
         buffer[1] = dataFlow;
         
         /* Fills the control message */
@@ -758,7 +823,7 @@ public class PacketCreator {
             Byte: 0  1  2  3  4  5  6  7  8  9  10 11  ... buffer.length
                   0  x  C  O  N  T  p1 p1 p3 p4     (data)
         */
-        buffer[0] = 0;
+        buffer[0] = (byte) CONT.getCode();;
         buffer[1] = dataFlow;
         
         /* Fills the control message and the port number */

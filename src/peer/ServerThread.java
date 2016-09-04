@@ -12,6 +12,8 @@ import static control.Notification.*;
 import common.Common;
 import packets.ControlMessage;
 import control.Notification;
+import gui.files.FileShareGUI;
+import gui.main.FXMLPeerController;
 import packets.PacketChecker;
 import packets.PacketCreator;
 import java.io.IOException;
@@ -21,9 +23,12 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import javafx.application.Platform;
 
 /**
  * Thread to handle the server behaviour for the peer.
@@ -452,9 +457,13 @@ public class ServerThread extends Thread {
                 case PLAIN:
                     handlePLAIN ();
                     break;
-                    
+
                 case DATA:
                     handleDATA ();
+                    break;
+
+                case INFO:
+                    handleINFO ();
                     break;
 
                 default:
@@ -1090,6 +1099,72 @@ public class ServerThread extends Thread {
             }
         }
 
+        /**
+         * Handles a received {@code INFO} packet.
+         */
+        private void handleINFO () {
+
+            Host sender;
+
+            byte [] aux = new byte [4];
+            System.arraycopy(buffer, INFO.getLength(),
+                             aux, 0,
+                             aux.length);
+
+            int portAux = Common.arrayToInt (aux);
+            ResourceBundle resources;
+            
+            byte [] info = new byte [buffer.length - INFO.getLength() - 4];
+            boolean accepted;
+            
+            System.arraycopy(buffer, INFO.getLength() + 4,
+                             info, 0,
+                             info.length);
+            resources = ResourceBundle.getBundle(Common.resourceBundle,
+                                                 FXMLPeerController.currentLocale);
+            /* Searches the sender on its list. If its not found, returns
+            without sending an answer back */
+            if ((sender = peer.getHostsList().search(dataFlow,
+                                                     packet.getAddress(),
+                                                     portAux)
+                ) != null) {
+
+//                Platform.runLater( () -> {
+//                
+//                    DatagramPacket response;
+//                    
+//                    if (FileShareGUI.showConfirmationDialog(resources,
+//                                                            new String (info))) {
+//                    
+//                        /* As the sender is known and the petition has been 
+//                        accepted, creates an ACK packet and sends it */
+//                        response = PacketCreator.ACK(sender.getDataFlow(), port);
+//                        sender.send(response);
+//                        
+//                    } else {
+//                        
+//                        /* The petition has been rejected, so a NACK message is
+//                        sent back */
+//                        response = PacketCreator.NACK (sender.getDataFlow());
+//                        sender.send(response);
+//                    }
+//                });
+
+                DatagramPacket response = PacketCreator.ACK(sender.getDataFlow(), port);
+                sender.send(response);
+                
+            } else {
+
+                /* Unknown sender */
+                logger.logWarning("INFO message from an unknown source."
+                        + "\nMessage: "
+                        + "\nFrom " + packet.getAddress() + ":"
+                        + "\n\tText:" + new String(buffer)
+                        + "\n\tBytes: " + Arrays.toString(buffer)
+                        + "\n");
+            }
+        }
+
 
         /**
          * Handles a received {@code PLAIN} packet.
@@ -1156,18 +1231,18 @@ public class ServerThread extends Thread {
                              aux, 0,
                              aux.length);
             int portAux = Common.arrayToInt(aux);
-            
+
             /* Searches the sender on its list. If its not found, returns
             without sending an answer back */
             if ((sender = peer.getHostsList().search(dataFlow,
                                                      packet.getAddress(),
                                                      portAux)
                 ) != null) {
-
+logger.logMsg("Data received.\n");
                 /* As the sender is known, creates an ACK packet and sends it */
                 response = PacketCreator.ACK (sender.getDataFlow(), port);
                 sender.send (response);
-                
+
             } else {
 
                 /* Unknown sender */
@@ -1215,7 +1290,7 @@ public class ServerThread extends Thread {
                                   msgAux,
                                   0,
                                   msgAux.length);
-                
+
                 /* Creates and adds the notification */
                 notif = new Notification(packet.getAddress(),
                                          dataFlow,
@@ -1241,8 +1316,8 @@ public class ServerThread extends Thread {
 
             return msgAux;
         }
-        
-        
+
+
         /**
          * Handles a received {@code CONT} packet.
          *
@@ -1260,8 +1335,8 @@ public class ServerThread extends Thread {
             byte [] aux = new byte [4];
             System.arraycopy(buffer, CONT.getLength(),
                              aux, 0, aux.length);
-            
-            int portAux = Common.arrayToInt(aux);    
+
+            int portAux = Common.arrayToInt(aux);
             String msg;
 
             /* Searches the sender on its list. If its not found, returns
@@ -1270,7 +1345,7 @@ public class ServerThread extends Thread {
                                                      packet.getAddress(),
                                                      portAux)
                 ) != null) {
-                
+
                 /* Checks if there was any notification for a CONT message */
                 if ((notif = searchNotification(packet)) != null) {
 

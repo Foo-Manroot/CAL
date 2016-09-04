@@ -143,6 +143,17 @@ CODE 0 GROUP:
      * {@code packet[17]} the lowest byte.
      */
     CHNG_DF_RESP (0, 14),
+    
+    /**
+     * Indicates that the following bytes are information for the application.
+     * 
+     * <p>
+     * This method has 4 bytes as a single argument: the port where the answer
+     * has to be sent. This bytes start at {@code packet[11]}, being that
+     * position the highest byte of the integer that represents the port, and
+     * {@code packet[14]} the lowest byte.
+     */
+    INFO (0, 6),
 
 
 /*
