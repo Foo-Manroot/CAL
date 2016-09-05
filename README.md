@@ -68,3 +68,4 @@
   * /hosts: Shows a list with information about the hosts. If no parameters are given, it shows only information about the   hosts on the current room. To show all the rooms, the parameter "all" must be added.
   * /leave: Leaves the current chat room.
   * /exit: Disconnects the user from all the rooms.
+  * /send: Opens a window to select a file and sends it to the rest of the hosts on the room.
