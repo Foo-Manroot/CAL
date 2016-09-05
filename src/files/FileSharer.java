@@ -196,6 +196,8 @@ public class FileSharer extends Thread {
         expectedAnswer = new Notification(destination.getIPaddress(),
                                           destination.getDataFlow(),
                                           ACK);
+        
+        expectedAnswer.setPort (destination.getPort());
 
         /* Sends the packet and waits for confirmation */
         destination.send (confirmation, expectedAnswer, origin, 1);

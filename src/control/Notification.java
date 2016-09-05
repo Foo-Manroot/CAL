@@ -1,5 +1,6 @@
 package control;
 
+import common.Common;
 import packets.ControlMessage;
 import packets.PacketChecker;
 import java.net.DatagramPacket;
@@ -52,6 +53,12 @@ public class Notification {
     private final InetAddress sourceIP;
     
     /**
+     * Port number that can be sent with the message. If no port number is 
+     * expected, this value is {@code -1}.
+     */
+    private int sourcePort;
+    
+    /**
      * Data flow at which the answer message must belong.
      */
     private final byte sourceDataFlow;
@@ -86,6 +93,7 @@ public class Notification {
         this.sourceDataFlow = sourceDataFlow;
         this.message = message;
         args = null;
+        sourcePort = -1;
     }
     
     /**
@@ -113,6 +121,7 @@ public class Notification {
         this.sourceDataFlow = sourceDataFlow;
         this.message = message;
         this.args = args;
+        sourcePort = -1;
     }
     
     /**
@@ -132,6 +141,10 @@ public class Notification {
      */
     public boolean checkPacket (DatagramPacket packet) {
         
+        byte [] data,
+                portAux = new byte [4];
+        int port = -1;
+                
         if (packet == null ||
             packet.getAddress() == null || 
             packet.getData() == null) {
@@ -140,13 +153,27 @@ public class Notification {
         }
         
         /* Gets the data of the packet */
-        byte [] data = new byte [packet.getLength()];
-        System.arraycopy(packet.getData(), 0, data, 0, packet.getLength());
+        data = new byte [packet.getLength()];
+        System.arraycopy(packet.getData(), 0,
+                         data, 0,
+                         packet.getLength());
+        
+        /* If a port number is expected, gets it (if it's possible) */
+        if ( (sourcePort > 0) &&
+             (data.length >= (message.getLength() + portAux.length)) ) {
+            
+            System.arraycopy (data, message.getLength(),
+                              portAux, 0,
+                              portAux.length);
+            
+            port = Common.arrayToInt(portAux);
+        }        
         
         return (received = (
                             PacketChecker.checkPacket(data).equals(message) &&
                             packet.getAddress().equals(sourceIP) &&
-                            (data[1] == sourceDataFlow)
+                            (data[1] == sourceDataFlow) &&
+                            (port == sourcePort)
                             )
                 );
     }
@@ -270,5 +297,29 @@ public class Notification {
     public byte getSourceDataFlow () {
         
         return this.sourceDataFlow;
+    }
+    
+    /**
+     * Returns the value of the expected argument representing a port number 
+     * (normally, the 4 bytes after the control message).
+     * 
+     * @return 
+     *              The value of {@code sourcePort}.
+     */
+    public int getPort () {
+        
+        return this.sourcePort;
+    }
+    
+    /**
+     * Sets the value of the expected argument representing a port number 
+     * (normally, the 4 bytes after the control message).
+     * 
+     * @param newValue 
+     *              The new value for {@code sourcePort}.
+     */
+    public void setPort (int newValue) {
+        
+        sourcePort = newValue;
     }
 }
