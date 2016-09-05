@@ -14,6 +14,7 @@ import common.Common;
 import control.Notification;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.DatagramPacket;
@@ -68,7 +69,7 @@ public class FileSharer extends Thread {
      * Date when the request was sent.
      */
     private Date startDate;
-
+    
 /* -------------------------------------- */
 /* ---- END OF ATTRIBUTE DECLARATION ---- */
 /* -------------------------------------- */
@@ -96,30 +97,8 @@ public class FileSharer extends Thread {
         confirmed = false;
         startDate = new Date ();
     }
-
-    /**
-     * Blocks the thread until it's notified or the maximum wait time
-     * is reached.
-     */
-    private synchronized void checkAnswer () {
-
-        /* Waits until an answer is received or the max. wait time is reached */
-        while ((!answerReceived) &&
-               ((new Date().getTime() - startDate.getTime()) < MAX_WAIT_TIME)) {
-
-            try {
-
-                wait (MAX_WAIT_TIME);
-
-            } catch (InterruptedException ex) {
-
-                logger.logError ("InterruptedException at "
-                                + "FileSharer.checkAnswer(): "
-                                + ex.getMessage());
-            }
-        }
-    }
-
+    
+    
     @Override
     public void run () {
 
@@ -128,9 +107,6 @@ public class FileSharer extends Thread {
 
         startDate = new Date ();
         checkAnswer ();
-        
-        logger.logWarning ("Answer received: " + answerReceived + 
-                           "\nConfirmed: " + confirmed + "\n");
 
         if (answerReceived) {
 
@@ -153,6 +129,29 @@ public class FileSharer extends Thread {
                                + " transfer proposal: "
                                +  destination.toString()
                                + "\nFile: " + path + "\n");
+        }
+    }
+
+    /**
+     * Blocks the thread until it's notified or the maximum wait time
+     * is reached.
+     */
+    private synchronized void checkAnswer () {
+
+        /* Waits until an answer is received or the max. wait time is reached */
+        while ((!answerReceived) &&
+               ((new Date().getTime() - startDate.getTime()) < MAX_WAIT_TIME)) {
+
+            try {
+
+                wait (MAX_WAIT_TIME);
+
+            } catch (InterruptedException ex) {
+
+                logger.logError ("InterruptedException at "
+                                + "FileSharer.checkAnswer(): "
+                                + ex.getMessage());
+            }
         }
     }
 
@@ -278,6 +277,37 @@ public class FileSharer extends Thread {
         }
 
         return 0;
+    }
+    
+    /**
+     * Writes the given array of bytes into the desired file.
+     * 
+     * @param path 
+     *              A string with the path to the file. If it don't exists, a 
+     *          new file is created.
+     * 
+     * @param bytes 
+     *              The array of bytes to append to the file.
+     * 
+     * 
+     * @return 
+     *              The new size of the file, in bytes.
+     */
+    public static long writeFile (String path, byte [] bytes) {
+        
+        File file = new File (path);
+        
+        try (FileOutputStream stream = new FileOutputStream (file, true)) {
+            
+            stream.write(bytes);
+            
+        } catch (IOException ex) {
+            
+            logger.logError("IOException at FileSharer.writeFile (): "
+                            + ex.getMessage());
+        }
+        
+        return file.length ();
     }
 
     /**

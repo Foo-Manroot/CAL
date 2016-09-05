@@ -6,6 +6,7 @@
 package peer;
 
 import static common.Common.logger;
+import static common.Common.fileObserver;
 import static packets.ControlMessage.*;
 import static control.Notification.*;
 
@@ -267,7 +268,7 @@ public class ServerThread extends Thread {
         searched one (or the list is over) */
         for (Notification n : notifications) {
 
-            if (n.checkPacket(packet)) {
+            if (n.checkPacket (packet)) {
 
                 return n;
             }
@@ -497,7 +498,7 @@ public class ServerThread extends Thread {
 
             /* Checks if it was one of the messages that the client was waiting
             for */
-            if ((notif = searchNotification(packet)) != null) {
+            if ((notif = searchNotification (packet)) != null) {
 
                 /* If it was an answer for a DF_CHG_RESP, changes the data
                 flow of the sender, as the proposal has been accepted */
@@ -516,9 +517,9 @@ public class ServerThread extends Thread {
                  * notifies the observer.
                  */
                 if ((sender != null) && 
-                    (Common.fileObserver.containsHost (sender))) {
+                    (fileObserver.containsHost (sender))) {
                     
-                    Common.fileObserver.notifyAnswer(sender, true);
+                    fileObserver.notifyAnswer(sender, true);
                 }
 
                 /* The notification was on the list -> removes it (the
@@ -561,9 +562,9 @@ public class ServerThread extends Thread {
                  * notifies the observer.
                  */
                 if ((sender != null) && 
-                    (Common.fileObserver.containsHost (sender))) {
+                    (fileObserver.containsHost (sender))) {
                     
-                    Common.fileObserver.notifyAnswer(sender, false);
+                    fileObserver.notifyAnswer(sender, false);
                 }
                 
                 notifications.remove(notif);
@@ -1152,11 +1153,38 @@ public class ServerThread extends Thread {
 
                 Platform.runLater( () -> {
                 
+                    String fileInfo = new String (info);
+                    String fileName = new String ();
+                    int index = 0;
                     DatagramPacket response;
                     
+                    /* Shows a dialog to accept or reject the file transfer */
                     if (FileShareGUI.showConfirmationDialog(resources,
-                                                            new String (info))) {
+                                                            fileInfo)) {
                     
+                        /* Gets the original name of the file (the field
+                        after "Name: ") */
+                        while (!fileName.contains("Name") && 
+                               (index < fileInfo.split(":").length)) {
+                            
+                            fileName = fileInfo.split(":")[index];
+                            
+                            index++;
+                        }
+                        
+                        if (fileName.contains("Name") && 
+                            (index < fileInfo.split(":").length)) {
+                            
+                            fileName = fileInfo.split(":")[index]
+                                               .split("\n")[0]
+                                               .trim();
+                        }
+                        
+                        /* Adds the file to the list of the observer */
+                        fileName = FileShareGUI.selectSavePath (fileName);
+                        
+                        fileObserver.addFile (sender, fileName);
+                        
                         /* As the sender is known and the petition has been 
                         accepted, creates an ACK packet and sends it */
                         response = PacketCreator.ACK(sender.getDataFlow(), port);
@@ -1249,6 +1277,11 @@ public class ServerThread extends Thread {
                              aux, 0,
                              aux.length);
             int portAux = Common.arrayToInt(aux);
+            
+            byte data [] = new byte [buffer.length - DATA.getLength() - 4];
+            System.arraycopy(buffer, DATA.getLength() + 4,
+                             data, 0,
+                             data.length);
 
             /* Searches the sender on its list. If its not found, returns
             without sending an answer back */
@@ -1256,7 +1289,10 @@ public class ServerThread extends Thread {
                                                      packet.getAddress(),
                                                      portAux)
                 ) != null) {
-logger.logMsg("Data received.\n");
+                
+                /* Appends the received information to the file */
+                fileObserver.writeToFile (sender, data);
+                
                 /* As the sender is known, creates an ACK packet and sends it */
                 response = PacketCreator.ACK (sender.getDataFlow(), port);
                 sender.send (response);
@@ -1275,7 +1311,7 @@ logger.logMsg("Data received.\n");
 /* --------------------- */
 /* ---- AUX METHODS ---- */
 /* --------------------- */
-
+        
         /**
          * Parses the given plaintext message. If there's a CONT message at
          * the end of the buffer, strips it and creates a notification.

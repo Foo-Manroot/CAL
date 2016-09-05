@@ -5,6 +5,8 @@
  */
 package main;
 
+import static packets.ControlMessage.DATA;
+
 import common.Common;
 import gui.files.FileShareGUI;
 import gui.main.FXMLPeerController;
@@ -22,7 +24,6 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
-import static packets.ControlMessage.DATA;
 import packets.PacketChecker;
 import packets.PacketCreator;
 

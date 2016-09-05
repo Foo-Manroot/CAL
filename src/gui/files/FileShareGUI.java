@@ -9,6 +9,7 @@ import common.Common;
 import gui.main.FXMLPeerController;
 import gui.main.PeerGUI;
 import java.io.File;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -23,103 +24,103 @@ import javafx.stage.Stage;
  *  Methods to show the graphical interface involved on the file sharing.
  */
 public class FileShareGUI {
-    
+
     /**
      * Return value for {@code showConfirmDialog()}.
      */
     private static boolean retVal;
-    
-    
+
+
 /* --------------------------------------- */
 /* ---- END OF ATTRIBUTES DECLARATION ---- */
 /* --------------------------------------- */
-    
+
     /**
      * Confirmation dialog to accept a file interchange.
-     * 
-     * @param resources 
+     *
+     * @param resources
      *              Resource bundle with the strings to put on this dialog.
-     * 
+     *
      * @param fileProps
      *              Information of the file.
-     * 
-     * 
-     * @return 
+     *
+     *
+     * @return
      *              <i>true</i> if the "Accept" button has been pressed,
      *          <i>false</i> otherwise.
      */
     public static boolean showConfirmationDialog (ResourceBundle resources,
                                                   String fileProps) {
-        
+
         retVal = true;
         GridPane layout = new GridPane();
         layout.setMinSize(365, 191);
-        
+
         Stage stage = new Stage();
-        
+
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.setTitle (resources.getString("accept_file_dialog_title"));
-        
+
         /* Label for the confirmation text and the file information */
         Label confirmLabel = new Label (resources.getString("accept_file_dialog"));
         Label fileInfo = new Label (fileProps);
-        
+
         /* "Accept" and "cancel" buttons */
         Button acceptButton = new Button(resources.getString("accept_button"));
         Button cancelButton = new Button(resources.getString("cancel_button"));
 
         /* Sets the action on each button */
         acceptButton.setOnAction (e -> {
-            
+
             retVal = true;
             stage.close();
         });
-        
+
         cancelButton.setOnAction(e -> {
-            
+
             /* Sets the attribute to false and closes the window */
             retVal = false;
             stage.close();
         });
-        
+
         stage.setOnCloseRequest(e -> {
-        
+
             e.consume();
             /* Sets the attribute to false and closes the window */
             retVal = false;
             stage.close();
         });
 
-        /* Adds everything to the layout and shows the window */        
+        /* Adds everything to the layout and shows the window */
         layout.addRow(0, confirmLabel);
         layout.addRow(1, fileInfo);
         layout.addRow(2, acceptButton, cancelButton);
-        
+
         layout.setAlignment(Pos.CENTER);
-        
+
         Scene scene = new Scene(layout);
-        
+
         stage.setScene(scene);
         stage.showAndWait();
 
         return retVal;
     }
-    
+
     /**
      * Shows a dialog to select a file.
-     * 
-     * @return 
+     *
+     * @return
      *              The selected {@link File}, or {@code null} if none has been
      *          selected.
      */
     public static File selectFile () {
-        
+
         ResourceBundle resourceBundle;
         FileChooser fileChooser = new FileChooser();
 
         resourceBundle = ResourceBundle.getBundle(Common.resourceBundle,
                                                   FXMLPeerController.currentLocale);
-        
+
         fileChooser.setTitle(resourceBundle.getString("ask_file_path"));
 
         fileChooser.getExtensionFilters().addAll(
@@ -127,13 +128,56 @@ public class FileShareGUI {
                 new FileChooser.ExtensionFilter("Text Files", "*.txt"),
                 new FileChooser.ExtensionFilter("Data Files", "*.dat"),
                 new FileChooser.ExtensionFilter("Image Files", "*.jpg",
-                                                                "*.bmp",
-                                                                "*.gif"));
+                                                               "*.bmp",
+                                                               "*.gif"),
+                new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
 
         File selectedFile = fileChooser.showOpenDialog(PeerGUI.stage
                                                               .getScene()
                                                               .getWindow());
-        
+
         return selectedFile;
+    }
+
+    /**
+     * Shows a dialog to select a path to store a file.
+     *
+     * @param initialFileName
+     *              String with the initial name of the file. It can
+     *          be {@code null}.
+     *
+     * @return
+     *              The selected {@link File}, or {@code null} if none has been
+     *          selected.
+     */
+    public static String selectSavePath (String initialFileName) {
+
+        ResourceBundle resourceBundle;
+        FileChooser fileChooser = new FileChooser();
+
+        resourceBundle = ResourceBundle.getBundle(Common.resourceBundle,
+                                                  FXMLPeerController.currentLocale);
+
+        fileChooser.setTitle(resourceBundle.getString("ask_file_path"));
+
+        if (initialFileName != null) {
+
+            fileChooser.setInitialFileName (initialFileName);
+        }
+
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("All Files", "*.*"),
+                new FileChooser.ExtensionFilter("Text Files", "*.txt"),
+                new FileChooser.ExtensionFilter("Data Files", "*.dat"),
+                new FileChooser.ExtensionFilter("Image Files", "*.jpg",
+                                                               "*.bmp",
+                                                               "*.gif"),
+                new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+
+        File selectedFile = fileChooser.showSaveDialog(PeerGUI.stage
+                                                              .getScene()
+                                                              .getWindow());
+
+        return selectedFile.getAbsolutePath();
     }
 }

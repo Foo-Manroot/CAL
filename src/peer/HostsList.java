@@ -289,7 +289,7 @@ public class HostsList {
         byte [] buffer;
         /* Length of the address (depends on the IP version) */
         byte addrLen;
-        //ConcurrentLinkedQueue<Host> knownHosts = hosts;
+        
         ConcurrentLinkedQueue<Host> changes = new ConcurrentLinkedQueue<>();
         Host auxHost;
         
@@ -300,7 +300,7 @@ public class HostsList {
             return null;
         }
         
-        /* As indicated on Host.getInfo(), the second byte indicates the
+        /* As explained on Host.getInfo(), the second byte indicates the
         addresss length */
         addrLen = packet [1];
 
@@ -328,16 +328,14 @@ public class HostsList {
 
                         /* Sends a HELLO message. If they answer back, they're
                         added to the list */
-                        //if (localPeer.connect(auxHost)) {
+                        if (localPeer.connect(auxHost)) {
                             
                             changes.add(auxHost);
-                        //}
+                        }
                     }
                 }
             }
         }
-        
-        //hosts = knownHosts;
         
         return changes;
     }

@@ -14,6 +14,8 @@ import gui.files.FileShareGUI;
 import gui.main.PeerGUI;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import peer.Host;
 
 /**
@@ -330,10 +332,17 @@ public class Parser {
      * Closes all active connections with every peer.
      */
     private boolean EXIT () {
+        
+        boolean retVal;
 
         logger.logMsg("Exiting all rooms...\n");
+        
+        
+        retVal = peer.disconnect();
+        
+        logger.logMsg("Completed.\n");
 
-        return peer.disconnect();
+        return retVal;
     }
 
     /**
@@ -344,9 +353,15 @@ public class Parser {
      */
     private boolean LEAVE (byte chatRoom) {
 
-        logger.logMsg("Leaving the room...\n");
+        boolean retVal;
+        
+        logger.logMsg("Leaving the room...\n", chatRoom);
 
-        return peer.leaveChatRoom(chatRoom);
+        retVal = peer.leaveChatRoom(chatRoom);
+        
+        logger.logMsg("Completed.\n", chatRoom);
+        
+        return retVal;
     }
     
     
@@ -357,8 +372,18 @@ public class Parser {
      *              The ID of the room where the receiver hosts are.
      */
     private boolean SEND (byte chatRoomID) {
+        
+        ThreadPoolExecutor pool;
     
+        /* Creates up to 20 threads */
+        pool = (ThreadPoolExecutor) Executors.newFixedThreadPool (20);
+        
         File selectedFile = FileShareGUI.selectFile();
+        
+        if (selectedFile == null) {
+            
+            return true;
+        }
         
         if (!selectedFile.exists()) {
             
@@ -374,8 +399,8 @@ public class Parser {
             FileSharer sharer = new FileSharer (selectedFile.getAbsolutePath(),
                                                 PeerGUI.peer,
                                                 h);
-           
-            sharer.start();
+
+            pool.execute (sharer);
         }
         
         return true;

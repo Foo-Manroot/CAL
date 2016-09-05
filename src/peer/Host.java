@@ -427,7 +427,7 @@ public class Host implements Serializable {
      * <pre>
      *  Bytes: 
      *      0: Data flow.
-     *      1: Indicates the length of the address (4 if it's IPv4, 8 if IPv6).
+     *      1: Indicates the length of the address (4 if it's IPv4, 16 if IPv6).
      *      2, 3, 4, 5: IP address (on {@code array[2]} is the highest byte).
      *          (if it's an IPv6 address, takes 12 bytes more and the port 
      *          number starts on {@code array[18]})
