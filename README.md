@@ -36,7 +36,7 @@
 
   Simply download [the latest release](https://github.com/Foo-Manroot/CAL/releases) and execute the file with `java -jar CAL.jar`
 
-# Use
+# Usage
   One of the objectives of this project is to make a fairly simple and friendly interface (for the moment it has plain and inelegant interface, but it wil be changed to a prettier and easier to use one).
   
   The main interface has a main pane that occupies the majority of the interface and two little panels on the right to show error and warning messages (they can be hidden). Below there are also two buttons to establish a new connection (button 'connect') and to check the connection with all the known peers (button 'check connection').
